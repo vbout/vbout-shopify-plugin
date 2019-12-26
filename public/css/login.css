@@ -1,0 +1,293 @@
+
+#connect-modal{
+	font-family: 'Montserrat', sans-serif;
+}
+/*---------SIGN IN PAGE----------*/
+img.signIn-logo {
+    margin-left: 70px;
+    padding-top: 30px;
+}
+.signIn-features {
+    margin-left: 70px;
+    margin-top: 180px;
+	color: #ffffff;
+    font-size: 16px;
+}
+.signIn-right-block {
+    display: block;
+    width: 558px;
+    margin: 0 auto;
+}
+.signIn-title {
+    text-align: center;
+    margin: 0;
+    padding-top: 130px;
+	color: #3b3b40;
+}
+.signIn-Subtitle {
+    text-align: center;
+    font-size: 16px;
+	color: #787b7f;
+}
+.signIn-input-email p {
+    margin-bottom: 4px;
+	color: #7f909a;
+}
+.signIn-input-email input {
+	padding: 10px 10px 10px 10px;
+    border-radius: 3px;
+    border: 1px solid #e6edf1;
+    width: 100%;
+	background-color: #f4f8f9;
+}
+.signIn-input-password {
+    margin-top: 20px;
+}
+.signIn-input-password p{
+	margin-bottom: 4px;
+	color: #7f909a;
+}
+.signIn-input-password input {
+    padding: 10px 10px 10px 10px;
+    border-radius: 3px;
+    border: 1px solid #e6edf1;
+    width: 100%;
+	background-color: #f4f8f9;
+}
+.signIn-forgotpassword-link{
+	float: right;
+}
+span.signIn-forgotpassword-link a {
+    text-decoration: underline;
+	color: #1f81b8;
+}
+.signIn-form {
+    padding-top: 50px;
+    position: relative;
+}
+.signIn-login-button {
+    padding: 10px 10px 10px 10px;
+    border-radius: 3px;
+    border: 1px solid #8ba523;
+	background-color: #8ba523;
+    width: 100%;
+    margin-top: 30px;
+	color: #ffffff;
+}
+.signIn-createAccount {
+    padding-top: 20px;
+    text-align: center;
+}
+.signIn-createAccount a{
+	text-decoration: underline;
+	color: #1f81b8;
+}
+/*---------SIGN IN PAGE----------*/
+
+
+
+/*---------FORGOT PASSWORD PAGE----------*/
+.forGotPassword-right-block {
+    display: block;
+    width: 558px;
+    margin: 0 auto;
+}
+.forGotPassword-title {
+    text-align: center;
+    margin: 0;
+    padding-top: 130px;
+	color: #3b3b40;
+}
+.forGotPassword-Subtitle {
+    text-align: center;
+    font-size: 16px;
+	color: #787b7f;
+	padding-top: 5px;
+}
+.forGotPassword-input-email p {
+    margin-bottom: 4px;
+	color: #7f909a;
+}
+.forGotPassword-input-email input {
+	padding: 10px 10px 10px 10px;
+    border-radius: 3px;
+    border: 1px solid #e6edf1;
+    width: 100%;
+	background-color: #f4f8f9;
+}
+.forGotPassword-form {
+    padding-top: 50px;
+    position: relative;
+}
+.forGotPassword-reset-button {
+    padding: 10px 10px 10px 10px;
+    border-radius: 3px;
+    border: 1px solid #8ba523;
+	background-color: #8ba523;
+    width: 100%;
+    margin-top: 30px;
+	color: #ffffff;
+}
+.forGotPassword-BacksignIn {
+    padding-top: 20px;
+    text-align: center;
+}
+.forGotPassword-BacksignIn a{
+	text-decoration: underline;
+	color: #1f81b8;
+}
+/*---------FORGOT PASSWORD PAGE----------*/
+
+
+/*---------CREATE ACCOUNT PAGE----------*/
+.CreateAccount-title {
+    text-align: center;
+    margin: 0;
+    padding-top: 60px;
+	color: #3b3b40;
+}
+.CreateAccount-Subtitle {
+    text-align: center;
+    font-size: 16px;
+	color: #787b7f;
+	padding-top: 5px;
+}
+.CreateAccount-input-email p {
+    margin-bottom: 4px;
+	color: #7f909a;
+}
+.CreateAccount-input-email input {
+	padding: 10px 10px 10px 10px !important;
+	height: auto !important;
+    border-radius: 3px;
+    border: 1px solid #e6edf1;
+    width: 100%;
+	background-color: #f4f8f9;
+}
+.CreateAccount-form {
+    padding-top: 50px;
+}
+.CreateAccount-register-button {
+    padding: 10px 10px 10px 10px;
+    border-radius: 3px;
+    border: 1px solid #8ba523;
+	background-color: #8ba523;
+    width: 100%;
+    margin-top: 30px;
+	color: #ffffff;
+}
+.CreateAccount-login {
+    padding-top: 20px;
+    text-align: center;
+}
+.CreateAccount-login a{
+	text-decoration: underline;
+	color: #1f81b8;
+}
+.CreateAccount-input-email {
+    padding-bottom: 10px;
+}
+#connect-modal .input-group-addon{
+	border: 0px !important;
+}
+#connect-modal .form-control{
+	padding: 20px !important;
+    padding-left: 7px !important;
+}
+
+.login-loader{
+	position: absolute;
+	display: none;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 1000;
+	background: url(ajax-loader.gif) no-repeat center center;
+	background-color: rgba(255,255,255,0.6);
+}
+.login-loader span {
+	position: absolute;
+	font-size: 18px;
+	text-align: center;
+	width: 300px;
+	left: 50%;
+	top: 50%;
+	margin-left: -150px;
+	margin-top: 50px;
+	color: #444;
+}
+
+.errorSummary, .fieldset-errors, .fieldset-success{
+	border: 2px solid #C00;
+	padding: 7px 7px 7px;
+	margin: 0 0 20px 0;
+	background: #FEE;
+	font-size: 0.9em;
+}
+#connect-modal .fieldset-success{
+	border: 2px solid #8ba523;
+	background: #d8ea8f;
+}
+
+.errorSummary p, .fieldset-errors p, .fieldset-success p{
+	display: none;
+	margin: 0;
+	padding: 5px;
+}
+
+.errorSummary ul, .fieldset-errors ul, .fieldset-success ul{
+	margin: 0;
+	padding: 0 0 0 0;
+}
+.errorSummary li, .fieldset-errors li, .fieldset-success li{
+	list-style: none;
+}
+
+#change-language {
+    text-align: right;
+    display: block;
+    padding-top: 10px;
+    padding-bottom: 5px;
+}
+#change-language a {
+    position: static;
+    display: inline-block;
+    margin-left: 7px;
+}
+#change-language img {
+
+}
+/*---------CREATE ACCOUNT PAGE----------*/
+@media only screen and (max-width: 768px){
+	.col-md-3.signIn-left-block{
+		display: none;
+	}
+}
+
+@media only screen and (max-width: 414px){
+	.signIn-left-block{
+		display: none;
+	}
+	.signIn-right-block{
+		width: 100%;
+	}
+}
+
+@media only screen and (max-width: 375px){
+	.col-md-3.signIn-left-block{
+		display: none;
+	}
+}
+
+@media only screen and (max-width: 360px){
+	.col-md-3.signIn-left-block{
+		display: none;
+	}
+}
+
+@media only screen and (max-width: 320px){
+	.col-md-3.signIn-left-block{
+		display: none;
+	}
+}

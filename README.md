@@ -4,11 +4,7 @@ Shopify Plugin that link Metadata of orders, carts ,customers , products and wit
 ## The Plugin has the Following Features :
 
   - Abandoned Cart Data
-  - Search Data 
-  - Registering a new customer data
   - Adding a new Product Data ( With variations, Category , price and images , descriptions)
-  - Product Visits Data
-  - Product Category Visit Data
   - Syncing Customers ( For customer data prior the use of the plugin) 
   - Syncing Product   ( For Product data prior the use of the plugin)
   ## limitations : 

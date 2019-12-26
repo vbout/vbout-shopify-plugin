@@ -1,27 +1,71 @@
-# Laravel PHP Framework
+# vbout-Shopify-plugin
+Shopify Plugin that link Metadata of orders, carts ,customers , products and with Integration settings.
 
-[![Build Status](https://travis-ci.org/laravel/framework.svg)](https://travis-ci.org/laravel/framework)
-[![Total Downloads](https://poser.pugx.org/laravel/framework/d/total.svg)](https://packagist.org/packages/laravel/framework)
-[![Latest Stable Version](https://poser.pugx.org/laravel/framework/v/stable.svg)](https://packagist.org/packages/laravel/framework)
-[![Latest Unstable Version](https://poser.pugx.org/laravel/framework/v/unstable.svg)](https://packagist.org/packages/laravel/framework)
-[![License](https://poser.pugx.org/laravel/framework/license.svg)](https://packagist.org/packages/laravel/framework)
+## The Plugin has the Following Features :
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable, creative experience to be truly fulfilling. Laravel attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as authentication, routing, sessions, queueing, and caching.
+  - Abandoned Cart Data
+  - Search Data 
+  - Registering a new customer data
+  - Adding a new Product Data ( With variations, Category , price and images , descriptions)
+  - Product Visits Data
+  - Product Category Visit Data
+  - Syncing Customers ( For customer data prior the use of the plugin) 
+  - Syncing Product   ( For Product data prior the use of the plugin)
+  ## limitations : 
+    1 - We can't track user Login 
+    2- We can't track user's behaviour ( search , category or product visit )
+    2 - We can't uninstall the program from VBOUT, since the webhook responsible for the call of the Uninstallation of App, is constantly being called.
+    4 - WE can add a tracker JS to compliment the limitations we have on Shopify Thrid Party Application, where we can track user's search, product and category visit.
+  
+## Variations : 
+  
+ Variations in Shopify are handled as new products, since Shopify automatically sends them as new product for every variation. 
+ 
+## Search : 
+  
+  There is a no webhook for hooks activity for this we added a hook for every page load.
+  
+## Orders and Abandonded Carts : 
+  
+  ### Checkout : 
+    
+        There is a hook for checkout and does the following  since Shopify doesn't allow you to checkout without being registered and logged in first.
+        It acts like create cart + create order in the same function.
 
-Laravel is accessible, yet powerful, providing tools needed for large, robust applications. A superb inversion of control container, expressive migration system, and tightly integrated unit testing support give you the tools you need to build any application with which you are tasked.
+  ### Create and Update Cart  : 
+          there is a hook for both Cart Update and Cart create and they have the following functionalities : 
+            - Create a new cart
+            - Products are added ( a loop to handle them ) 
 
-## Official Documentation
+  ### Cart Item Remove : 
 
-Documentation for the framework can be found on the [Laravel website](http://laravel.com/docs).
+        Cart Update is handeled to remove all previous carts and adding all what is in cart (Remove from cart is acting like checkout update)
 
-## Contributing
+  ### Orders Create and Update : 
+      The both have different hooks, they work the same. An Order is added with Shipping and Biling information, alongside with customer's information.
+      
+      - Updating Cart : 
+          - In the process of updating cart, any update to status( Cancelled, Pending, Paid, Shipped/success), details, products is updated directly.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](http://laravel.com/docs/contributions).
+## Customers Add, Update and Sync :
+    - We cannot know customers detail based on the log-in. Limitation from Shopify.
+    - Customer's sync adds all the Customers that already bought from Shopify Store.
 
-## Security Vulnerabilities
+## Product Add Update and Sync :
+      products are handeled differently in 
+      . Every product having a variation, this variation can have different ( considered an independed product but under a parent product ) : 
+      - Descritpion
+      - Product id
+      - Image
+      - quantity 
+      - price
+      - sale price 
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell at taylor@laravel.com. All security vulnerabilities will be promptly addressed.
+      For this the product Price and sale price will be zero only for parent products with Variations, this is because once you create a variation, you are not allowed to put products price, quantity and sale price.
 
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
+    - Products are added , updated on an Admin page.
+    - Product's sync adds all products that are in the system that were added and are still in stock.
+    
+## IP and Customer Link: 
+    -We cannot register any kind any clicks , since it's Shopify based on limited webhooks , so we can't monitor user's search , IP upon login. 
+    - WE can only have record of IP on Checkout and Order.

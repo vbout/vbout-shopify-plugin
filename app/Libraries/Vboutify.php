@@ -31,6 +31,13 @@ class Vboutify
         $shopUrl = $request->header('x-shopify-shop-domain');
         $settings = $this->loadSettings($shopUrl);
         $result = 'No settings provided';
+        DB::table('logging')->insert(
+            [
+                'data' => $event,
+                'step' => 0,
+                'comment' => 'Init2'
+            ]
+        );
         if ($settings->newShop == 1 )
         {
             $vboutify = new VboutifyV2();

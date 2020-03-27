@@ -11,7 +11,13 @@ class MapFieldsController extends Controller
 
     public function ShopifyMapFields($data, $mappingFields)
     {
-
+        DB::table('logging')->insert(
+            [
+                'data' => 'here',
+                'step' => 2,
+                'comment' => 'in Shopfiy Mapping fields'
+            ]
+        );
         $enterLoop = 0 ;
         $PostData = [];
         foreach ($mappingFields as $vboutFields => $shopifyFields)
@@ -57,6 +63,13 @@ class MapFieldsController extends Controller
             }
             else if(count($shopifyFieldsLayers) == 2)
             {
+                DB::table('logging')->insert(
+                    [
+                        'data' => 'here2',
+                        'step' => 3,
+                        'comment' => 'in Shopfiy Mapping fields'
+                    ]
+                );
                 if(!isset($data[$shopifyFieldsLayers[0]][$shopifyFieldsLayers[1]]) || $data[$shopifyFieldsLayers[0]][$shopifyFieldsLayers[1]] == null)
                 {
                      if (count($data[$shopifyFieldsLayers[0]]) > 1)
@@ -77,8 +90,21 @@ class MapFieldsController extends Controller
             else if(count($shopifyFieldsLayers) == 1)
             {
                 $PostData[$vboutFields] = $data[$shopifyFieldsLayers[0]];
+                DB::table('logging')->insert(
+                    [
+                        'data' => (serialize($shopifyFieldsLayers)),
+                        'step' => 2,
+                        'comment' => 'inseeting post data in  Shopfiy Mapping fields'
+                    ]
+                );
             }
-
+            DB::table('logging')->insert(
+                [
+                    'data' => (serialize($shopifyFieldsLayers)),
+                    'step' => 2,
+                    'comment' => 'inseeting post data in  Shopfiy Mapping fields'
+                ]
+            );
         }
 
         return $PostData;

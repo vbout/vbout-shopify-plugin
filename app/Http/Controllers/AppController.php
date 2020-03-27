@@ -77,6 +77,13 @@ class AppController extends Controller
         }
 
         $installUrl = shopify\install_url($shopUrl, $this->apiKey);
+        DB::table('logging')->insert(
+            [
+                'data' => serialize($installUrl),
+                'step' => 2,
+                'comment' => 'not codde'
+            ]
+        );
         return redirect($installUrl);
     }
 
@@ -87,7 +94,13 @@ class AppController extends Controller
      */
     public function start(Request $request)
     {
-
+        DB::table('logging')->insert(
+            [
+                'data' =>'start',
+                'step' => 1,
+                'comment' => 'start'
+            ]
+        );
         $shopUrl = $request->input('shop');
         $code = $request->input('code');
 		$upgradeplan = $request->input('upgradeplan');
@@ -210,6 +223,13 @@ class AppController extends Controller
     public function UNINSTALL(Request $request)
     {
 
+        DB::table('logging')->insert(
+            [
+                'data' => 'INIT UNUINSTALL',
+                'step' => 1,
+                'comment' => serialize($request)
+            ]
+        );
         // No need to delete webhooks that are created using webhook API. See https://ecommerce.shopify.com/c/shopify-apis-and-technology/t/app-uninstalled-error-401-unauthorized-token-when-trying-to-deregister-webhooks-399712
         // $this->deleteWebhooks($request->domain);
         $shop = Shop::where('shop_url', $request->domain)->get();
@@ -220,7 +240,13 @@ class AppController extends Controller
         Setting::where('shop_id',$shop_id)->delete();
         $vboutSettingsSync= new EcommerceWS(['api_key' => $shop->apiKey]);
         $vboutSettingsSync->sendAPIIntegrationCreation($shop,3);
-
+        DB::table('logging')->insert(
+            [
+                'data' => 'finish UNUINSTALL',
+                'step' => 1,
+                'comment' => 'prior delete'
+            ]
+        );
         return response()->json(['success' => 'App uninstalled successfully']);
     }
 
@@ -286,7 +312,13 @@ class AppController extends Controller
 
         if (count($webhookList) > 0) {
             foreach ($webhookList as $webhook) {
-
+                DB::table('logging')->insert(
+                    [
+                        'data' => $webhook,
+                        'step' => 1,
+                        'comment' => 'create  webhook'
+                    ]
+                );
                 $this->webhooks->create($webhook, $this->webhookUrl . '/sync');
             }
             $this->webhooks->create('app/uninstalled', $this->webhookUrl . '/uninstall');

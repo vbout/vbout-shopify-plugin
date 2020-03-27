@@ -29,20 +29,25 @@ class SettingsController extends Controller
 		$shop = Shop::where('shop_url', $shopUrl)->first();
 		if ($shop->domain == '' )
         {
-            $shoUrlArray = explode('.',$shopUrl);
-            // check the shop url having the domain in it
-            $domain = Domains::where('shop_url','like',$shoUrlArray[0].'.%')->orderBy('id', 'DESC')->pluck('domain');
-            if(count($domain) != 0)
+            $shop = Shop::where('shop_url', $shopUrl)->first();
+            if ($shop->domain == '' )
             {
-                $shop->domain = $domain[0];
-                $shop->save();
-            }
-            else
-                return view('errorPage', [
-                    'message' => 'Your website\'s Domain name is different from the one used with Shopify.',
-                    'urlRedirect' => 'app.vbout.com/Settings/Integrations'
+                $shoUrlArray = explode('.',$shopUrl);
+                // check the shop url having the domain in it
+                $domain = Domains::where('shop_url','like',$shoUrlArray[0].'.%')->orderBy('id', 'DESC')->pluck('domain');
+                if(count($domain) != 0)
+                {
+                    $shop->domain = $domain[0];
+                    $shop->save();
+                }
+                else
+                    return view('errorPage', [
+                        'message' => 'Your website\'s Domain name is different from the one used with Shopify.',
+                        'urlRedirect' => 'app.vbout.com/Settings/Integrations'
                     ]);
 
+            }            $shop->domain = $domain[0];
+            $shop->save();
         }
 
 		if($shop){				
@@ -358,6 +363,7 @@ class SettingsController extends Controller
                         if ( $item['title'] == 'Default Title')
                             $productData['name']  = $dataFields['name'];
                         else $productData['name']  = $dataFields['name'].' ('.$item['title'].')';
+
                         if (isset($item['image_id']) || ($item['image_id'] != null))
                         {
                             foreach ($images as $imageIndex => $imageValue)

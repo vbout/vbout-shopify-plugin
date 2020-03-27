@@ -46,10 +46,22 @@ class Shopify
 
             return json_decode($response->getBody());
         } catch (\GuzzleHttp\Exception\ClientException $e) {
-
+            DB::table('logging')->insert(
+                [
+                    'data' => $e->getMessage(),
+                    'step' => 0,
+                    'comment' => 'WEbhook'
+                ]
+            );
             return $this->errorResponse($e->getMessage());
         } catch (\Exception $e) {
-
+            DB::table('logging')->insert(
+                [
+                    'data' => $e->getMessage(),
+                    'step' => 0,
+                    'comment' => 'WEbhook'
+                ]
+            );
             return $this->errorResponse($e->getMessage());
         }
     }

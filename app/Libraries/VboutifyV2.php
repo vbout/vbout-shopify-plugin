@@ -80,6 +80,14 @@ class VboutifyV2
                     $mappedFields = $shopifyFields->getCheckoutFiedlMap();
                     $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
                     $mappedFields = $shopifyFields->getCustomerFieldMap();
+
+                    DB::table('logging')->insert(
+                        [
+                            'data' => json_encode($request->all()),
+                            'step' => 1,
+                            'comment' => 'Init'
+                        ]
+                    );
                     $dataFields ['customerinfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
                     $action = 1;
                     $dataFields['domain'] = $domain;
@@ -89,11 +97,19 @@ class VboutifyV2
                     $dataFieldsCart['domain'] = $dataFields['domain'];
                     $dataFieldsCart['customer'] = $dataFieldsCart['customerinfo']["email"];
                     $dataFieldsCart['storename'] = $request->all()['line_items'][0]['vendor'];
-
+                    DB::table('logging')->insert(
+                        [
+                            'data' => json_encode($dataFieldsCart),
+                            'step' => 1,
+                            'comment' => 'Init'
+                        ]
+                    );
                     $sendData->Cart($dataFieldsCart, $action);
                     $line_items = $request->all()['line_items'];
                     $removCartItem['domain'] = $dataFields['domain'];
                     $removCartItem['cartid'] = $dataFields['cartid'];
+
+                    $sendData->CartItem($removCartItem, 3);
 
                     foreach ($line_items as $lineItemIndex => $line_item) {
                         $checkoutData = [];
@@ -118,7 +134,6 @@ class VboutifyV2
                         $checkoutData['image'] = $productDataFieldsExtra['image'];
                         $checkoutData['categoryid'] = $productDataFieldsExtra['category'];
                         $checkoutData['category'] = $productDataFieldsExtra['category'];
-                        $sendData->CartItem($removCartItem, 3);
                         $sendData->CartItem($checkoutData, $action);
                     }
                 }
@@ -130,7 +145,7 @@ class VboutifyV2
                     $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
                     $mappedFields = $shopifyFields->getCustomerFieldMap();
                     $dataFields ['customerinfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
-                    $action = 2;
+                    $action = 1;
                     $dataFields['domain'] = $domain;
                     $mappedFieldsCreateCart = $shopifyFields->getCartBasicFieldMap();
                     $dataFieldsCart = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFieldsCreateCart);
@@ -143,6 +158,20 @@ class VboutifyV2
                     $removCartItem['domain'] = $dataFields['domain'];
                     $removCartItem['cartid'] = $dataFields['cartid'];
 
+                    DB::table('logging')->insert(
+                        [
+                            'data' => json_encode($request->all()),
+                            'step' => 1,
+                            'comment' => 'Init'
+                        ]
+                    );
+                    DB::table('logging')->insert(
+                        [
+                            'data' => json_encode($dataFieldsCart),
+                            'step' => 1,
+                            'comment' => 'Init'
+                        ]
+                    );
                     foreach ($line_items as $lineItemIndex => $line_item) {
                         $checkoutData = [];
                         $mappedFields = $shopifyFields->getProductFieldlMap();

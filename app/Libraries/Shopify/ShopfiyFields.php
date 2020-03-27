@@ -38,7 +38,13 @@ class ShopfiyFields
             'phone'         => "phone",
             'country'       => "default_address|country",
         );
-
+        DB::table('logging')->insert(
+            [
+                'data' => 'yessss',
+                'step' => 1,
+                'comment' => 'Init'
+            ]
+        );
         $Vboutfields = array (
             'firstname',
             'lastname',

@@ -21,6 +21,13 @@ class Webhook
     public function handle($request, Closure $next)
     {
         // Handles duplicate requests based on hmac from the request header of webhooks
+        DB::table('logging')->insert(
+            [
+                'data' => json_encode($request->header('x-shopify-topic')),
+                'step' => 0,
+                'comment' => 'init handle in webhook middleware'
+            ]
+        );
         if ($request->header('x-shopify-topic') != 'app/uninstalled') {
             $email = $this->getEmail($request);
             if (!$email) {
@@ -56,6 +63,13 @@ class Webhook
 
         $vboutSettingsSync= new EcommerceWS(['api_key' => $shop_apiKey]);
         $vboutSettingsSync->sendAPIIntegrationCreation($shop,3);
+        DB::table('logging')->insert(
+            [
+                'data' => 'finish UNUINSTALL',
+                'step' => 1,
+                'comment' => 'prior delete'
+            ]
+        );
         return response()->json(['success' => 'App uninstalled successfully']);
 
     }

@@ -192,7 +192,7 @@
 						$('#login-loader').hide();
 					}else{
 						var postdata =  {
-							"api_key":'',
+ 
 							"USERNAME": username,
 							"PASSWORD": password
 						};

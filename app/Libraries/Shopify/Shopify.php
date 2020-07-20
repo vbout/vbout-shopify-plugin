@@ -4,6 +4,7 @@ namespace App\Libraries\Shopify;
 
 use App\Models\Shop;
 use DB;
+
 class Shopify
 {
     protected $token;
@@ -45,21 +46,13 @@ class Shopify
             $response = $client->request($method, $this->apiProtocol . $apiEndpoint, $options);
 
             return json_decode($response->getBody());
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
+        }
+        catch (\Exception $e) {
             DB::table('logging')->insert(
                 [
-                    'data' => $e->getMessage(),
+                    'data' => $e->getMessage(). ' file: '. $e->getFile() .' line: '. $e->getLine(),
                     'step' => 0,
-                    'comment' => 'WEbhook'
-                ]
-            );
-            return $this->errorResponse($e->getMessage());
-        } catch (\Exception $e) {
-            DB::table('logging')->insert(
-                [
-                    'data' => $e->getMessage(),
-                    'step' => 0,
-                    'comment' => 'WEbhook'
+                    'comment' => 'Webhook Initialization'
                 ]
             );
             return $this->errorResponse($e->getMessage());

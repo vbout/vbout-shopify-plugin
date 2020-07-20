@@ -14,8 +14,9 @@ use App\Libraries\Vboutify;
 use App\Libraries\Vbout\Services\EmailMarketingWS;
 use App\Libraries\Shopify\Services\Customers;
 use DB;
-class SettingsController extends Controller
-{
+
+class SettingsController extends Controller{
+
     public function edit(Request $request, $shopUrl)
     {
 		$settings = null;
@@ -131,6 +132,7 @@ class SettingsController extends Controller
             'upgradeUrl' => $upgradeUrl
         ]);
     }
+
     public function configurationSettingsUpdate(Request $request, $shopUrl)
     {
          $oldsettings = $request->input('settings');
@@ -198,6 +200,7 @@ class SettingsController extends Controller
          }
         return redirect('settings/' . $shopUrl);
     }
+
     public function update(Request $request, $shopUrl)
     {
         $oldsettings = $request->input('settings');
@@ -310,6 +313,7 @@ class SettingsController extends Controller
 
         return response()->json(['message' => $result]);
     }
+
     private function syncCurrentCustomersV2(Request $request)
     {
         $shop = Shop::where('shop_url',$request->all()['shop'])->first();
@@ -328,10 +332,17 @@ class SettingsController extends Controller
                     $sendData->Customer($dataCustomer,1);
                 }
             } catch (\Exception $e) {
-                echo $e->getMessage() . ' on line ' . $e->getLine();
+                DB::table('logging')->insert(
+                    [
+                        'data' => $e->getMessage() . ' file: ' . $e->getFile() . ' line: ' . $e->getLine(),
+                        'step' => 0,
+                        'comment' => 'syncCurrentCustomersV2'
+                    ]
+                );
             }
         }
     }
+
     private function syncCurrentProducts(Request $request)
     {
         $shop = Shop::where('shop_url',$request->all()['shop'])->first();
@@ -385,10 +396,17 @@ class SettingsController extends Controller
 
                 }
             } catch (\Exception $e) {
-                echo $e->getMessage() . ' on line ' . $e->getLine();
+                DB::table('logging')->insert(
+                    [
+                        'data' => $e->getMessage() . ' file: ' . $e->getFile() . ' line: ' . $e->getLine(),
+                        'step' => 0,
+                        'comment' => 'syncCurrentProducts'
+                    ]
+                );
             }
         }
     }
+
     private function syncCurrentCustomers(Request $request)
     {
         if (isset($request->settings['apiKey']) && $request->settings['apiKey'] !== '') {
@@ -455,8 +473,15 @@ class SettingsController extends Controller
                     }
                 }
             } catch (\Exception $e) {
-                echo $e->getMessage() . ' on line ' . $e->getLine();
+                DB::table('logging')->insert(
+                    [
+                        'data' => $e->getMessage() . ' file: ' . $e->getFile() . ' line: ' . $e->getLine(),
+                        'step' => 0,
+                        'comment' => 'syncCurrentCustomers'
+                    ]
+                );
             }
         }
     }
+
 }

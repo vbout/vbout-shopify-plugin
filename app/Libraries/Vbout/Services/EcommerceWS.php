@@ -7,12 +7,13 @@ use App\Libraries\Vbout\Vbout;
 use App\Libraries\Vbout\VboutException;
 use App\Models\Setting;
 use DB;
+
 class EcommerceWS extends Vbout
 {
-    protected function init()
-    {
+    protected function init(){
         $this->api_url = '/ecommerce/';
     }
+
     public function sendEcommerce($type, $params = array())
     {
         {
@@ -33,6 +34,7 @@ class EcommerceWS extends Vbout
             return $result;
         }
     }
+
     public function Customer($data, $action)
     {
         $result = array();
@@ -48,12 +50,30 @@ class EcommerceWS extends Vbout
             if ($insertRecord != null && isset($insertRecord['data'])) {
                 $result = $insertRecord['data'];
             }
+
+            DB::table('logging')->insert(
+                [
+                    'data' => json_encode($result),
+                    'step' => 0,
+                    'comment' => 'Customer API Log'
+                ]
+            );
+
         } catch (VboutException $ex) {
             $result = $ex->getData();
+
+            DB::table('logging')->insert(
+                [
+                    'data' => json_encode($result),
+                    'step' => 0,
+                    'comment' => 'Customer API Error Log'
+                ]
+            );
         }
         return $result;
 
     }
+
     public function Cart($data, $action)
     {
         $result = array();
@@ -67,29 +87,66 @@ class EcommerceWS extends Vbout
                 $result = $insertRecord['data'];
             }
 
+            DB::table('logging')->insert(
+                [
+                    'data' => json_encode($result),
+                    'step' => 0,
+                    'comment' => 'Cart API Log'
+                ]
+            );
         } catch (VboutException $ex) {
             $result = $ex->getData();
+
+            DB::table('logging')->insert(
+                [
+                    'data' => json_encode($result),
+                    'step' => 0,
+                    'comment' => 'Cart API Error Log'
+                ]
+            );
         }
         return $result;
     }
 
-    public function  CartItem($data, $action)
+    public function CartItem($data, $action)
     {
         $result = array();
 
         try {
             $this->set_method('POST');
-            if ($action == 1 )
+            if ($action == 1){
                 $insertRecord = $this->AddCartItem($data);
-            else if($action == 2 )
+            }
+            else if($action == 2 ){
                 $insertRecord = $this->CreateCart($data);
-            else $insertRecord = $this->EmptyCart($data);
+            }
+            else {
+                $insertRecord = $this->EmptyCart($data);
+            }
 
             if ($insertRecord != null && isset($insertRecord['data'])) {
                 $result = $insertRecord['data'];
             }
-        } catch (VboutException $ex) {
+
+            DB::table('logging')->insert(
+                [
+                    'data' => json_encode($result),
+                    'step' => 0,
+                    'comment' => 'Cart Item API Log'
+                ]
+            );
+        }
+
+        catch (VboutException $ex) {
             $result = $ex->getData();
+
+            DB::table('logging')->insert(
+                [
+                    'data' => json_encode($result),
+                    'step' => 0,
+                    'comment' => 'Cart Item API Error Log'
+                ]
+            );
         }
         return $result;
     }
@@ -110,11 +167,28 @@ class EcommerceWS extends Vbout
                 $result = $insertRecord['data'];
             }
 
+            DB::table('logging')->insert(
+                [
+                    'data' => json_encode($result),
+                    'step' => 0,
+                    'comment' => 'Order API Log'
+                ]
+            );
+
         } catch (VboutException $ex) {
             $result = $ex->getData();
+
+            DB::table('logging')->insert(
+                [
+                    'data' => json_encode($result),
+                    'step' => 0,
+                    'comment' => 'Order API Error Log'
+                ]
+            );
         }
         return $result;
     }
+
     public function Product($data, $action)
     {
         $result = array();
@@ -128,11 +202,28 @@ class EcommerceWS extends Vbout
                 $result = $insertRecord['data'];
             }
 
+            DB::table('logging')->insert(
+                [
+                    'data' => json_encode($result),
+                    'step' => 0,
+                    'comment' => 'Product API Log'
+                ]
+            );
+
         } catch (VboutException $ex) {
             $result = $ex->getData();
+
+            DB::table('logging')->insert(
+                [
+                    'data' => json_encode($result),
+                    'step' => 0,
+                    'comment' => 'Product API Error Log'
+                ]
+            );
         }
         return $result;
     }
+
     public function getSettingsSync()
     {
         $result = array();
@@ -155,12 +246,29 @@ class EcommerceWS extends Vbout
                 $settingUpdate->save();
             }
 
+            DB::table('logging')->insert(
+                [
+                    'data' => 'Get Settings Successfully',
+                    'step' => 0,
+                    'comment' => 'Settings Sync API Error Log'
+                ]
+            );
+
         } catch (VboutException $ex) {
             $result = $ex->getData();
+
+            DB::table('logging')->insert(
+                [
+                    'data' => json_encode($result),
+                    'step' => 0,
+                    'comment' => 'Settings Sync API Error Log'
+                ]
+            );
         }
 
         return $result;
     }
+
     public function sendSettingsSync($data)
     {
         $result = array();
@@ -173,11 +281,29 @@ class EcommerceWS extends Vbout
 
             }
 
+            DB::table('logging')->insert(
+                [
+                    'data' => 'Send Settings Successfully',
+                    'step' => 0,
+                    'comment' => 'Send Settings Sync API Log'
+                ]
+            );
+
         } catch (VboutException $ex) {
             $result = $ex->getData();
+
+            DB::table('logging')->insert(
+                [
+                    'data' => json_encode($result),
+                    'step' => 0,
+                    'comment' => 'Send Settings Sync API Error Log'
+                ]
+            );
+
         }
         return $result;
     }
+
     public function sendAPIIntegrationCreation($shop,$action =1)
     {
         $data['domain']  = $shop->domain;
@@ -194,8 +320,25 @@ class EcommerceWS extends Vbout
             if ($insertRecord != null && isset($insertRecord['data'])) {
                 $result = $insertRecord['data'];
             }
+
+            DB::table('logging')->insert(
+                [
+                    'data' => 'Integration Created Successfully',
+                    'step' => 0,
+                    'comment' => 'Send Integration API Log'
+                ]
+            );
+
         } catch (VboutException $ex) {
             $result = $ex->getData();
+
+            DB::table('logging')->insert(
+                [
+                    'data' => json_encode($result),
+                    'step' => 0,
+                    'comment' => 'Send Integration API Error Log'
+                ]
+            );
         }
         return $result;
     }

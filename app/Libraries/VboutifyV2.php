@@ -29,8 +29,8 @@ class VboutifyV2
 				customer(email-first_name-last_name-state-total_spent-last_order_id-phone)
 
 	*/
-    public function start($request)
-    {
+
+    public function start($request){
         $this->getFieldMaps($request);
     }
 
@@ -39,8 +39,7 @@ class VboutifyV2
      * @param  $evemt
      * @returns int  $type
      */
-    private function getFieldMaps($request)
-    {
+    private function getFieldMaps($request){
 
         $shopifyFields = new ShopfiyFields();
         $shopifyMapFields = new MapFieldsController();
@@ -51,7 +50,15 @@ class VboutifyV2
         $settings = $this->loadSettings($shop->id);
         $domain = $shop->domain;
         $action = 0 ; // 1 for Create  , 2 for update , 3 for deletion
-//        $event = 'cart/add';
+
+        DB::table('logging')->insert(
+            [
+                'data' => json_encode($request->all()),
+                'step' => 1,
+                'comment' => $event .' init'
+            ]
+        );
+
         switch ($event) {
             case 'customers/create':
                 if($settings->customers == 1)
@@ -75,40 +82,34 @@ class VboutifyV2
                     $sendData->Customer($dataFields, $action);
                 }
                  break;
+
             case 'checkouts/create':
                 if($settings->abandoned_carts == 1) {
+                    try {
                     $mappedFields = $shopifyFields->getCheckoutFiedlMap();
                     $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
-                    $mappedFields = $shopifyFields->getCustomerFieldMap();
 
-                    DB::table('logging')->insert(
-                        [
-                            'data' => json_encode($request->all()),
-                            'step' => 1,
-                            'comment' => 'Init'
-                        ]
-                    );
-                    $dataFields ['customerinfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
-                    $action = 1;
-                    $dataFields['domain'] = $domain;
+                    $mappedFields = $shopifyFields->getCustomerFieldMap();
+                    $dataFields['customerinfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
+
                     $mappedFieldsCreateCart = $shopifyFields->getCartBasicFieldMap();
                     $dataFieldsCart = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFieldsCreateCart);
+
+                    $action = 1;
+
+                    $dataFields['domain'] = $domain;
+
                     $dataFieldsCart['customerinfo'] = $dataFields['customerinfo'];
                     $dataFieldsCart['domain'] = $dataFields['domain'];
                     $dataFieldsCart['customer'] = $dataFieldsCart['customerinfo']["email"];
-                    $dataFieldsCart['storename'] = $request->all()['line_items'][0]['vendor'];
-                    DB::table('logging')->insert(
-                        [
-                            'data' => json_encode($dataFieldsCart),
-                            'step' => 1,
-                            'comment' => 'Init'
-                        ]
-                    );
+                    $dataFieldsCart['storename'] = $request->input('line_items')[0]['vendor'];
+
                     $sendData->Cart($dataFieldsCart, $action);
-                    $line_items = $request->all()['line_items'];
+
+                    $line_items = $request->input('line_items');
+
                     $removCartItem['domain'] = $dataFields['domain'];
                     $removCartItem['cartid'] = $dataFields['cartid'];
-
                     $sendData->CartItem($removCartItem, 3);
 
                     foreach ($line_items as $lineItemIndex => $line_item) {
@@ -119,9 +120,12 @@ class VboutifyV2
                         $checkoutData['discountprice'] = '0.0';
                         $checkoutData['link'] = 'https://'.$shopUrl.'/products/'.strtolower(str_replace(" ","-",$checkoutData['name']));
 
-                        if ( $line_item['variant_title'] == '')
+                        if ($line_item['variant_title'] == ''){
                             $checkoutData['name']  = $checkoutData['name'];
-                        else $checkoutData['name']  = $checkoutData['name'].' ('.$line_item['variant_title'].')';
+                        }
+                        else {
+                            $checkoutData['name']  = $checkoutData['name'].' ('.$line_item['variant_title'].')';
+                        }
 
                         $checkoutData['currency'] = $dataFieldsCart['cartcurrency'];
                         $checkoutData['productid'] = $line_item['variant_id'];
@@ -136,6 +140,16 @@ class VboutifyV2
                         $checkoutData['category'] = $productDataFieldsExtra['category'];
                         $sendData->CartItem($checkoutData, $action);
                     }
+                    }
+                    catch (\Exception $ex) {
+                        DB::table('logging')->insert(
+                            [
+                                'data' => $ex->getMessage() . ' file: ' . $ex->getFile() . ' line: ' . $ex->getLine(),
+                                'step' => 0,
+                                'comment' => 'checkouts/create error log'
+                            ]
+                        );
+                    }
                 }
             break;
             case 'checkouts/update':
@@ -143,35 +157,29 @@ class VboutifyV2
 
                     $mappedFields = $shopifyFields->getCheckoutFiedlMap();
                     $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
+
                     $mappedFields = $shopifyFields->getCustomerFieldMap();
                     $dataFields ['customerinfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
+
                     $action = 1;
                     $dataFields['domain'] = $domain;
+
                     $mappedFieldsCreateCart = $shopifyFields->getCartBasicFieldMap();
                     $dataFieldsCart = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFieldsCreateCart);
+
                     $dataFieldsCart['customerinfo'] = $dataFields['customerinfo'];
                     $dataFieldsCart['domain'] = $dataFields['domain'];
                     $dataFieldsCart['customer'] = $dataFieldsCart['customerinfo']["email"];
-                    $dataFieldsCart['storename'] = $request->all()['line_items'][0]['vendor'];
+                    $dataFieldsCart['storename'] = $request->input('line_items')[0]['vendor'];
+
                     $sendData->Cart($dataFieldsCart, $action);
-                    $line_items = $request->all()['line_items'];
+
+                    $line_items = $request->input('line_items');
+
                     $removCartItem['domain'] = $dataFields['domain'];
                     $removCartItem['cartid'] = $dataFields['cartid'];
+                    $sendData->CartItem($removCartItem, 3);
 
-                    DB::table('logging')->insert(
-                        [
-                            'data' => json_encode($request->all()),
-                            'step' => 1,
-                            'comment' => 'Init'
-                        ]
-                    );
-                    DB::table('logging')->insert(
-                        [
-                            'data' => json_encode($dataFieldsCart),
-                            'step' => 1,
-                            'comment' => 'Init'
-                        ]
-                    );
                     foreach ($line_items as $lineItemIndex => $line_item) {
                         $checkoutData = [];
                         $mappedFields = $shopifyFields->getProductFieldlMap();
@@ -179,14 +187,14 @@ class VboutifyV2
                         $checkoutData = $productData;
                         $checkoutData['discountprice'] = '0.0';
                         $checkoutData['link'] = 'https://'.$shopUrl.'/products/'.strtolower(str_replace(" ","-",$checkoutData['name']));
-                        if ( $line_item['variant_title'] == '')
+                        if ( $line_item['variant_title'] == ''){
                             $checkoutData['name']  = $checkoutData['name'];
+                        }
                         else $checkoutData['name']  = $checkoutData['name'].' ('.$line_item['variant_title'].')';
 
                         $checkoutData['currency'] = $dataFieldsCart['cartcurrency'];
                         $checkoutData['productid'] = $line_item['variant_id'];
                         $checkoutData['customer'] = $dataFieldsCart['customerinfo']["email"];
-                        $removCartItem['productid'] = $line_item['variant_id'];
                         $checkoutData['domain'] = $dataFields['domain'];
                         $checkoutData['cartid'] = $dataFields['cartid'];
 
@@ -196,7 +204,6 @@ class VboutifyV2
 
                         $checkoutData['category'] = $productDataFieldsExtra['category'];
 
-                        $sendData->CartItem($removCartItem, 3);
                         $sendData->CartItem($checkoutData, 1);
                     }
                 }
@@ -217,10 +224,11 @@ class VboutifyV2
                 $dataFields['storename'] = $request->all()['line_items'][0]['vendor'];
                 $sendData->Order($dataFields,$action);
                 break;
+
+            case 'orders/updated':
+            case 'orders/cancelled':
+            case 'orders/fulfilled':
             case 'orders/paid':
-                $type = 3;
-                break;
-            case 'orders/updated':case 'orders/paid': case 'orders/cancelled': case 'orders/fulfilled': case 'orders/paid':
                 $mappedFields = $shopifyFields->getOrderFieldMap($shopUrl);
                 $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
                 $mappedFields = $shopifyFields->getCustomerFieldMap();
@@ -235,6 +243,7 @@ class VboutifyV2
                 $dataFields['storename'] = $request->all()['line_items'][0]['vendor'];
                 $sendData->Order($dataFields,$action);
                 break;
+
             case 'products/create':
                 if($settings->product_feed == 1 )
                 {
@@ -277,8 +286,7 @@ class VboutifyV2
                 }
                 break;
             case 'products/update':
-                if($settings->product_feed == 1 )
-                {
+                if($settings->product_feed == 1 ) {
                     $mappedFields = $shopifyFields->getProductMapField();
                     $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
                     $action = 1;
@@ -317,7 +325,8 @@ class VboutifyV2
                     }
                 }
                 break;
-                default:
+
+            default:
                 $type = 0;
                 break;
         }
@@ -325,7 +334,7 @@ class VboutifyV2
     }
 
     /**
-     * Mapps the parameter and sends them to a global function
+     * Maps the parameter and sends them to a global function
      * @int  $type
      * @param  $data
      * @string  $shop_url
@@ -370,23 +379,21 @@ class VboutifyV2
 
     }
 
-    private function loadShop($shopUrl)
-    {
+    private function loadShop($shopUrl){
 
         $settings = Shop::where('shop_url', $shopUrl)->first();
 
         return $settings;
     }
-    private function loadSettings($shop)
-    {
+
+    private function loadSettings($shop){
 
         $settings = Setting::where('shop_id', $shop)->first();
 
         return $settings;
     }
 
-    private function getProductDetails($variantId,$productId,$shopUrl)
-    {
+    private function getProductDetails($variantId,$productId,$shopUrl){
         $products = (new Products($shopUrl))->product($productId);
         $product = json_decode(json_encode($products, true), true);
         $product = $product['products'][0];

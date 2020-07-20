@@ -11,6 +11,7 @@ use App\Libraries\Vbout\Services\EmailMarketingWS;
 use Prophecy\Exception\Prediction\AggregateException;
 use function Sodium\add;
 use DB;
+
 class VboutifyV2
 {
 	/*
@@ -308,6 +309,7 @@ class VboutifyV2
         }
 
     }
+
     private function getCustomerData($data)
     {
         //Setting customer Email
@@ -319,6 +321,7 @@ class VboutifyV2
         }
         return $customer;
     }
+
     private function getProductData($data)
     {
         $products = [];

@@ -18,11 +18,12 @@ class WebhookController extends Controller
 
         DB::table('logging')->insert(
             [
-                'data' => 'None',
+                'data' => 'Sync',
                 'step' => 0,
-                'comment' => 'WEbhook'
+                'comment' => 'Webhook'
             ]
         );
+
         $vboutify = new Vboutify();
         $result = $vboutify->start($request);
         return response()->json(['message' => $result]);

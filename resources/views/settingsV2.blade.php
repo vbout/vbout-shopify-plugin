@@ -80,7 +80,7 @@
 									@if (isset($apiKey) && $apiKey !== '')
 
 
- 										@include('settings-listV2',compact($listOfSettings,$settingsHeaders))
+ 										@include('settings-listV2',compact('listOfSettings','settingsHeaders'))
 
 
 									@endif

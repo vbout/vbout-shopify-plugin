@@ -67,7 +67,7 @@ class VboutifyV2
                     $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
                     $action = 1;
                     $dataFields['domain'] = $domain;
-                    $dataFields['ipaddress'] = $_SERVER['REMOTE_ADDR'];
+//                    $dataFields['ipaddress'] = $_SERVER['REMOTE_ADDR'];
                     $sendData->Customer($dataFields,$action);
                 }
                 break;
@@ -77,7 +77,7 @@ class VboutifyV2
                     $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
                     $action = 1;
                     $dataFields['domain'] = $domain;
-                    $dataFields['ipaddress'] = $_SERVER['REMOTE_ADDR'];
+//                    $dataFields['ipaddress'] = $_SERVER['REMOTE_ADDR'];
 
                     $sendData->Customer($dataFields, $action);
                 }
@@ -253,7 +253,7 @@ class VboutifyV2
                     $dataFields['domain'] = $domain;
                     $variants = $request->all()['variants'];
                     $images   = $request->all()['images'];
-                    $dataFields['ipaddress'] =  $_SERVER['REMOTE_ADDR'];
+//                    $dataFields['ipaddress'] =  $_SERVER['REMOTE_ADDR'];
                     $dataFields['discountprice'] = '0.0';
                     $productData = $dataFields;
                     foreach ($variants as $ItemIndex => $item)
@@ -293,7 +293,7 @@ class VboutifyV2
                     $dataFields['domain'] = $domain;
                     $variants = $request->all()['variants'];
                     $images   = $request->all()['images'];
-                    $dataFields['ipaddress'] =  $_SERVER['REMOTE_ADDR'];
+//                    $dataFields['ipaddress'] =  $_SERVER['REMOTE_ADDR'];
                     $dataFields['discountprice'] = '0.0';
                     $productData = $dataFields;
                     foreach ($variants as $ItemIndex => $item)

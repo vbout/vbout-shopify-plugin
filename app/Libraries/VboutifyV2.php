@@ -401,25 +401,22 @@ class VboutifyV2
         $images   = $product['images'];
         $productData['category'] = $product['product_type'];
         $productData['image'] = '';
-        foreach ($variants as $ItemIndex => $item)
-        {
-            if ($item['id'] == $variantId)
-            {
-                if (isset($item['image_id']) || ($item['image_id'] != null))
-                {
-                    foreach ($images as $imageIndex => $imageValue)
-                    {
-                        if( $item['image_id'] == $imageValue['id'])
-                        {
+        foreach ($variants as $ItemIndex => $item) {
+            if ($item['id'] == $variantId) {
+                if (isset($item['image_id']) || ($item['image_id'] != null)) {
+                    foreach ($images as $imageIndex => $imageValue) {
+                        if( $item['image_id'] == $imageValue['id']) {
                             $productData['image'] = $imageValue['src'];
                             break;
                         }
                     }
                 }
-                else
-                {
-                    if ((isset($product['image']['src']) || ($product['image']['src'] != null)))
-                        $productData['image'] = $product['image']['src'];
+                else {
+                    if(isset($product['image'])){
+                        if (!empty($product['image']['src'])){
+                            $productData['image'] = $product['image']['src'];
+                        }
+                    }
                 }
             }
         }

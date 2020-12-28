@@ -381,8 +381,11 @@ class SettingsController extends Controller
                         }
                         else
                         {
-                            if ((isset($product['image']['src']) || ($product['image']['src'] != null)))
-                                $productData['image'] = $product['image']['src'];
+                            if(isset($product['image'])){
+                                if (!empty($product['image']['src'])){
+                                    $productData['image'] = $product['image']['src'];
+                                }
+                            }
                         }
                         $sendData->Product($productData,$action);
                     }

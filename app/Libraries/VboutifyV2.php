@@ -61,14 +61,6 @@ class VboutifyV2
 
         $ipAddress = $this->__get_ip();
 
-        DB::table('logging')->insert(
-            [
-                'data' => $ipAddress,
-                'step' => 1,
-                'comment' => 'Ip Address'
-            ]
-        );
-
         switch ($event) {
             case 'customers/create':
                 if($settings->customers == 1)
@@ -85,7 +77,7 @@ class VboutifyV2
                 if($settings->customers == 1) {
                     $mappedFields = $shopifyFields->getCustomerAloneFieldMap();
                     $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
-                    $action = 1;
+                    $action = 2;
                     $dataFields['domain'] = $domain;
 //                    $dataFields['ipaddress'] = $ipAddress;
 
@@ -173,7 +165,7 @@ class VboutifyV2
                     $mappedFields = $shopifyFields->getCustomerFieldMap();
                     $dataFields ['customerinfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
 
-                    $action = 1;
+                    $action = 2;
                     $dataFields['domain'] = $domain;
 
                     $mappedFieldsCreateCart = $shopifyFields->getCartBasicFieldMap();

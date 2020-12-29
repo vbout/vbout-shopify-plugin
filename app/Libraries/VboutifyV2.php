@@ -59,6 +59,16 @@ class VboutifyV2
             ]
         );
 
+        $ipAddress = $this->__get_ip();
+
+        DB::table('logging')->insert(
+            [
+                'data' => $ipAddress,
+                'step' => 1,
+                'comment' => 'Ip Address'
+            ]
+        );
+
         switch ($event) {
             case 'customers/create':
                 if($settings->customers == 1)
@@ -67,7 +77,7 @@ class VboutifyV2
                     $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
                     $action = 1;
                     $dataFields['domain'] = $domain;
-//                    $dataFields['ipaddress'] = $_SERVER['REMOTE_ADDR'];
+//                    $dataFields['ipaddress'] = $ipAddress;
                     $sendData->Customer($dataFields,$action);
                 }
                 break;
@@ -77,7 +87,7 @@ class VboutifyV2
                     $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
                     $action = 1;
                     $dataFields['domain'] = $domain;
-//                    $dataFields['ipaddress'] = $_SERVER['REMOTE_ADDR'];
+//                    $dataFields['ipaddress'] = $ipAddress;
 
                     $sendData->Customer($dataFields, $action);
                 }
@@ -98,6 +108,7 @@ class VboutifyV2
                         $action = 1;
 
                         $dataFields['domain'] = $domain;
+//                        $dataFields['ipaddress'] = $ipAddress;
 
                         $dataFieldsCart['customerinfo'] = $dataFields['customerinfo'];
                         $dataFieldsCart['domain'] = $dataFields['domain'];
@@ -133,6 +144,7 @@ class VboutifyV2
                             $removCartItem['productid'] = $line_item['variant_id'];
                             $checkoutData['domain'] = $dataFields['domain'];
                             $checkoutData['cartid'] = $dataFields['cartid'];
+//                            $checkoutData['ipaddress'] = $ipAddress;
 
                             $productDataFieldsExtra = $this->getProductDetails($checkoutData['productid'],$line_item['product_id'],$shopUrl);
                             $checkoutData['image'] = $productDataFieldsExtra['image'];
@@ -171,6 +183,7 @@ class VboutifyV2
                     $dataFieldsCart['domain'] = $dataFields['domain'];
                     $dataFieldsCart['customer'] = $dataFieldsCart['customerinfo']["email"];
                     $dataFieldsCart['storename'] = $request->input('line_items')[0]['vendor'];
+//                    $dataFieldsCart['ipaddress'] = $ipAddress;
 
                     $sendData->Cart($dataFieldsCart, $action);
 
@@ -197,6 +210,7 @@ class VboutifyV2
                         $checkoutData['customer'] = $dataFieldsCart['customerinfo']["email"];
                         $checkoutData['domain'] = $dataFields['domain'];
                         $checkoutData['cartid'] = $dataFields['cartid'];
+//                        $checkoutData['ipaddress'] = $ipAddress;
 
                         $productDataFieldsExtra = $this->getProductDetails($checkoutData['productid'],$line_item['product_id'],$shopUrl);
                         $checkoutData['image'] = $productDataFieldsExtra['image'];
@@ -220,6 +234,8 @@ class VboutifyV2
                 $dataFields['shippingInfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
                 $action = 1;
                 $dataFields['domain'] = $domain;
+//                $dataFields['ipaddress'] = $ipAddress;
+
                 $dataFields['orderdate'] = strtotime($dataFields['orderdate']);
                 $dataFields['storename'] = $request->all()['line_items'][0]['vendor'];
                 $sendData->Order($dataFields,$action);
@@ -253,7 +269,7 @@ class VboutifyV2
                     $dataFields['domain'] = $domain;
                     $variants = $request->all()['variants'];
                     $images   = $request->all()['images'];
-//                    $dataFields['ipaddress'] =  $_SERVER['REMOTE_ADDR'];
+//                    $dataFields['ipaddress'] = $ipAddress;
                     $dataFields['discountprice'] = '0.0';
                     $productData = $dataFields;
                     foreach ($variants as $ItemIndex => $item)
@@ -293,7 +309,7 @@ class VboutifyV2
                     $dataFields['domain'] = $domain;
                     $variants = $request->all()['variants'];
                     $images   = $request->all()['images'];
-//                    $dataFields['ipaddress'] =  $_SERVER['REMOTE_ADDR'];
+//                    $dataFields['ipaddress'] = $ipAddress;
                     $dataFields['discountprice'] = '0.0';
                     $productData = $dataFields;
                     foreach ($variants as $ItemIndex => $item)
@@ -421,5 +437,32 @@ class VboutifyV2
             }
         }
         return $productData;
+    }
+
+    private function __get_ip() {
+
+        //Just get the headers if we can or else use the SERVER global
+        if ( function_exists( 'apache_request_headers' ) ) {
+            $headers = apache_request_headers();
+        } else {
+            $headers = $_SERVER;
+        }
+
+        //Get the forwarded IP if it exists
+        if ( array_key_exists( 'CF-Connecting-IP', $headers ) && filter_var( $headers['CF-Connecting-IP'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
+            $the_ip = $headers['CF-Connecting-IP'];
+        }
+        else if ( array_key_exists( 'X-Forwarded-For', $headers ) && filter_var( $headers['X-Forwarded-For'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
+            $the_ip = $headers['X-Forwarded-For'];
+        }
+        elseif ( array_key_exists( 'HTTP_X_FORWARDED_FOR', $headers ) && filter_var( $headers['HTTP_X_FORWARDED_FOR'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 )) {
+            $the_ip = $headers['HTTP_X_FORWARDED_FOR'];
+        }
+        else {
+
+            $the_ip = filter_var( $_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 );
+        }
+
+        return $the_ip;
     }
 }

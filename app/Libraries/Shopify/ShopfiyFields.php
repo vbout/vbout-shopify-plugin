@@ -106,8 +106,7 @@ class ShopfiyFields
             'status'        => "financial_status",
             'notes'         => "note",
             'cartid'        => "cart_token",
-//            'ipaddress'     => 'browser_ip'
-
+            'ipaddress'     => 'browser_ip'
         );
         $Vboutfields  = array(
             'cartid',

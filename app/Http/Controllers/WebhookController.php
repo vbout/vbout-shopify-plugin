@@ -18,7 +18,7 @@ class WebhookController extends Controller
 
         DB::table('logging')->insert(
             [
-                'data' => 'Sync',
+                'data' => 'Sync: '. time(),
                 'step' => 0,
                 'comment' => 'Webhook'
             ]

@@ -27,8 +27,9 @@ class ShopfiyFields
         );
         return $fieldsMap;
     }
+    public function getCustomerAloneFieldMap()
+    {
 
-    public function getCustomerAloneFieldMap(){
 
         $fieldsMap = array(
             'email'         => "email",
@@ -38,8 +39,17 @@ class ShopfiyFields
             'country'       => "default_address|country",
         );
 
+        $Vboutfields = array (
+            'firstname',
+            'lastname',
+            'email',
+            'phone',
+            'company',
+            'country'
+        );
         return $fieldsMap;
     }
+
 
     public function getCartFieldMap()
     {
@@ -47,10 +57,24 @@ class ShopfiyFields
             'cartid'        => "id",
             'uniqueid'      => "token",
            );
-
+        $Vboutfields = array (
+            'cartid',
+            'productid',
+            'name',
+            'description',
+            'variation',
+            'price',
+            'discountprice',
+            'currency',
+            'quantity',
+            'sku',
+            'categoryid',
+            'category',
+            'link',
+            'image',
+        );
         return $fieldMap;
     }
-
     public function getCartBasicFieldMap()
     {
         $fieldMap = array(
@@ -63,7 +87,6 @@ class ShopfiyFields
 
         return $fieldMap;
     }
-
     public function getOrderFieldMap($storename)
     {
         $fieldsMap = array(
@@ -76,17 +99,43 @@ class ShopfiyFields
             'subtotal'      => "subtotal_price",
             'discountcode'  => "discount_codes|code",
             'discountvalue' => "total_discounts",
+//            'taxname'       => 'tax_lines|title',
             'taxcost'       => "total_tax",
+//            'storename'      => $storename,
             'currency'      => "currency",
             'status'        => "financial_status",
             'notes'         => "note",
             'cartid'        => "cart_token",
-            'ipAddress'     => 'browser_ip'
+            'ipaddress'     => 'browser_ip'
+        );
+        $Vboutfields  = array(
+            'cartid',
+            'orderid',
+            'orderdate',
+            'paymentmethod',
+            'shippingmethod',
+            'shippingcost',
+            'storename',
+            'grandtotal',
+            'subtotal',
+            'promocode',
+            'promovalue',
+            'discountcode',
+            'discountvalue',
+            'taxname',
+            'taxcost',
+            'otherfeename',
+            'otherfeecost',
+            'currency',
+            'status',
+            'notes',
+            'customerinfo',
+            'billinginfo',
+            'shippinginfo',
 
         );
         return $fieldsMap;
     }
-
     public function getCheckoutFiedlMap()
     {
         $fieldMap = array(
@@ -97,40 +146,40 @@ class ShopfiyFields
         );
         return $fieldMap;
     }
-
-    public function getProductFieldlMap(){
+    public function getProductFieldlMap()
+    {
         $fieldMap = array(
             'quantity'      => "quantity",
             'productid'     => "product_id",
             'price'         => "price",
             'name'          => "title",
             'sku'           => "sku",
+//            'variation'     => "variant_title",
+//            'discountprice' => "applied_discounts",
         );
         return $fieldMap;
     }
-
-    public function getCartitemFieldlMap(){
+    public function getCartitemFieldlMap()
+    {
         $fieldMap = array(
             'quantity'      => "quantity",
             'productid'     => "id",
             'price'         => "price",
             'name'          => "title",
             'sku'           => "sku",
+//            'variation'     => "variant_title",
             'discountprice' => "discounted_price",
             'currency'  => "line_price_set|presentment_money|currency_code",
 
         );
         return $fieldMap;
     }
-
     public function getAddressMapFields($type)
     {
-        if ($type = 1){
+        if ($type = 1)
             $type = 'billing_address';
-        }
-        else if ($type = 2){
+        else if ($type = 2)
             $type = 'shipping_address';
-        }
 
         $fieldsMap = array(
             'firstname'     =>  $type.'|first_name',
@@ -146,31 +195,51 @@ class ShopfiyFields
             'countrycode'   =>  $type.'|country_code',
             'zipcode'       =>  $type.'|zip'
         );
+        $Vboutfields  = array(
+            'firstname',
+            'lastname',
+            'email',
+            'phone',
+            'company',
+            'address',
+            'address2',
+            'city',
+            'statename',
+            'statecode',
+            'countryname',
+            'countrycode',
+            'zipcode',
+
+        );
         return $fieldsMap;
     }
-
-    public function getProductFeedFieldlMap(){
+    public function getProductFeedFieldlMap()
+    {
 
         $fieldMap = array(
             'productid'		=>'id',
             'name'		    =>'title',
             'category'		=>'product_type',
             'image'		    =>'image',
+//            'description'	=>'xxxxxxxxxxxxxxxxxx',
         );
         return $fieldMap;
     }
 
-    public function getProductFeedVariantFieldlMap(){
+    public function getProductFeedVariantFieldlMap()
+    {
+
         $fieldMap = array(
             'price'		    =>'variants|price',
             'discountprice'	=>'variants|sku',
             'currency'		=>'variants|presentment_prices|price|currency_code',
             'sku'		    =>'variants|sku',
+//            'link'		    =>'xxxxxxxxxxxxxxxxxx',
          );
         return $fieldMap;
     }
-
-    public function getProductMapField(){
+    public function getProductMapField()
+    {
         //There's no way to determine what a visitor or customer is looking at with the Shopify API.
         $fieldsMap = array(
             'productid'     => 'id',
@@ -178,9 +247,27 @@ class ShopfiyFields
             'categoryid'    => 'product_type',
             'category'      => 'product_type',
             'description'   => 'body_html',
+//            'image'         => 'image|src'
         );
 
+        $Vboutfields  = array(
+            'customer',
+            'uniqueid',
+            'productid',
+            'name',
+            'price',
+            'discountprice',
+            'currency',
+            'sku',
+            'categoryid',
+            'category',
+            'link',
+            'image',
+            'description',
+
+        );
         return $fieldsMap;
+
     }
 
     private function getCategoryMapField($data)
@@ -198,7 +285,6 @@ class ShopfiyFields
         return $Vboutfields;
 
     }
-
     public function getSettingsMapField()
     {
         //Also Not provided or available by Shopify
@@ -216,4 +302,5 @@ class ShopfiyFields
         return $Vboutfields;
 
     }
+
 }

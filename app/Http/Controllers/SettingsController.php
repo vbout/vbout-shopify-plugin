@@ -14,9 +14,8 @@ use App\Libraries\Vboutify;
 use App\Libraries\Vbout\Services\EmailMarketingWS;
 use App\Libraries\Shopify\Services\Customers;
 use DB;
-
-class SettingsController extends Controller{
-
+class SettingsController extends Controller
+{
     public function edit(Request $request, $shopUrl)
     {
 		$settings = null;
@@ -30,24 +29,8 @@ class SettingsController extends Controller{
 		$shop = Shop::where('shop_url', $shopUrl)->first();
 		if ($shop->domain == '' )
         {
-            $shop = Shop::where('shop_url', $shopUrl)->first();
-            if ($shop->domain == '' )
-            {
-                $shoUrlArray = explode('.',$shopUrl);
-                // check the shop url having the domain in it
-                $domain = Domains::where('shop_url','like',$shoUrlArray[0].'.%')->orderBy('id', 'DESC')->pluck('domain');
-                if(count($domain) != 0)
-                {
-                    $shop->domain = $domain[0];
-                    $shop->save();
-                }
-                else
-                    return view('errorPage', [
-                        'message' => 'Your website\'s Domain name is different from the one used with Shopify.',
-                        'urlRedirect' => 'app.vbout.com/Settings/Integrations'
-                    ]);
-
-            }            $shop->domain = $domain[0];
+            $domain = Domains::where('shop_url',$shopUrl)->orderBy('id', 'DESC')->pluck('domain');
+            $shop->domain = $domain[0];
             $shop->save();
         }
 
@@ -99,6 +82,7 @@ class SettingsController extends Controller{
         $settingsConfigure = new Setting();
         $listOfSettings = $settingsConfigure->getListActiveSettings($shop->id,'Shopify');
         $settingsHeaders = $settingsConfigure->getListSettingsHeaders('Shopify');
+
         return view('settingsV2', [
             'listOfSettings' => $listOfSettings,
             'settingsHeaders' => $settingsHeaders,
@@ -132,7 +116,6 @@ class SettingsController extends Controller{
             'upgradeUrl' => $upgradeUrl
         ]);
     }
-
     public function configurationSettingsUpdate(Request $request, $shopUrl)
     {
          $oldsettings = $request->input('settings');
@@ -200,7 +183,6 @@ class SettingsController extends Controller{
          }
         return redirect('settings/' . $shopUrl);
     }
-
     public function update(Request $request, $shopUrl)
     {
         $oldsettings = $request->input('settings');
@@ -313,7 +295,6 @@ class SettingsController extends Controller{
 
         return response()->json(['message' => $result]);
     }
-
     private function syncCurrentCustomersV2(Request $request)
     {
         $shop = Shop::where('shop_url',$request->all()['shop'])->first();
@@ -332,17 +313,10 @@ class SettingsController extends Controller{
                     $sendData->Customer($dataCustomer,1);
                 }
             } catch (\Exception $e) {
-                DB::table('logging')->insert(
-                    [
-                        'data' => $e->getMessage() . ' file: ' . $e->getFile() . ' line: ' . $e->getLine(),
-                        'step' => 0,
-                        'comment' => 'syncCurrentCustomersV2'
-                    ]
-                );
+                echo $e->getMessage() . ' on line ' . $e->getLine();
             }
         }
     }
-
     private function syncCurrentProducts(Request $request)
     {
         $shop = Shop::where('shop_url',$request->all()['shop'])->first();
@@ -366,14 +340,33 @@ class SettingsController extends Controller{
                     $dataFields['link'] = 'https://'.$shop->shop_url.'/products/'.$dataFields['name'];
 
                     $productData = $dataFields;
+
+                    $variations   = $request->all()['options'];
+                    $variationArray = array();
+
+                    foreach ($variations as $variation)
+                    {
+                        $countVariations = 0 ;
+                        $variationString = '';
+                        foreach ($variation['values'] as $variationValues)
+                        {
+                            if($variationValues != 'Title')
+                            {
+                                $variationString.= $variationValues;
+                                if($countVariations < count($variation['values'])-1)
+                                    $variationString .=', ';
+                                $countVariations++;
+                            }
+                        }
+                        $variationArray[$variation['name']]= $variationString;
+                    }
+
                     foreach ($variants as $ItemIndex => $item)
                     {
                         $productData['sku']         = $item['sku'];
                         $productData['productid']   = $item['id'];
                         $productData['price']       = $item['price'];
-                        if ( $item['title'] == 'Default Title')
-                            $productData['name']  = $dataFields['name'];
-                        else $productData['name']  = $dataFields['name'].' ('.$item['title'].')';
+                        $productData['name']        = $dataFields['name'];
 
                         if (isset($item['image_id']) || ($item['image_id'] != null))
                         {
@@ -388,25 +381,20 @@ class SettingsController extends Controller{
                         }
                         else
                         {
-                            if ((isset($product['image']['src']) || ($product['image']['src'] != null)))
-                                $productData['image'] = $product['image']['src'];
+                            if(isset($product['image'])){
+                                if (!empty($product['image']['src'])){
+                                    $productData['image'] = $product['image']['src'];
+                                }
+                            }
                         }
                         $sendData->Product($productData,$action);
                     }
-
                 }
             } catch (\Exception $e) {
-                DB::table('logging')->insert(
-                    [
-                        'data' => $e->getMessage() . ' file: ' . $e->getFile() . ' line: ' . $e->getLine(),
-                        'step' => 0,
-                        'comment' => 'syncCurrentProducts'
-                    ]
-                );
+                echo $e->getMessage() . ' on line ' . $e->getLine();
             }
         }
     }
-
     private function syncCurrentCustomers(Request $request)
     {
         if (isset($request->settings['apiKey']) && $request->settings['apiKey'] !== '') {
@@ -473,15 +461,8 @@ class SettingsController extends Controller{
                     }
                 }
             } catch (\Exception $e) {
-                DB::table('logging')->insert(
-                    [
-                        'data' => $e->getMessage() . ' file: ' . $e->getFile() . ' line: ' . $e->getLine(),
-                        'step' => 0,
-                        'comment' => 'syncCurrentCustomers'
-                    ]
-                );
+                echo $e->getMessage() . ' on line ' . $e->getLine();
             }
         }
     }
-
 }

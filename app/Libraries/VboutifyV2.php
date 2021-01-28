@@ -55,7 +55,7 @@ class VboutifyV2
             [
                 'data' => json_encode($request->all()),
                 'step' => 1,
-                'comment' => $event .' init'
+                'comment' => $event .' init '. time()
             ]
         );
 

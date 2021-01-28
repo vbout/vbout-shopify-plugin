@@ -55,7 +55,7 @@ class EcommerceWS extends Vbout
                 [
                     'data' => json_encode($result),
                     'step' => 0,
-                    'comment' => 'Customer API Log'
+                    'comment' => 'Customer API Log: '.time()
                 ]
             );
 
@@ -66,7 +66,7 @@ class EcommerceWS extends Vbout
                 [
                     'data' => json_encode($result),
                     'step' => 0,
-                    'comment' => 'Customer API Error Log'
+                    'comment' => 'Customer API Error Log: '.time()
                 ]
             );
         }
@@ -91,7 +91,7 @@ class EcommerceWS extends Vbout
                 [
                     'data' => json_encode($result),
                     'step' => 0,
-                    'comment' => 'Cart API Log'
+                    'comment' => 'Cart API Log: '.time()
                 ]
             );
         } catch (VboutException $ex) {
@@ -101,7 +101,7 @@ class EcommerceWS extends Vbout
                 [
                     'data' => json_encode($result),
                     'step' => 0,
-                    'comment' => 'Cart API Error Log'
+                    'comment' => 'Cart API Error Log: '.time()
                 ]
             );
         }
@@ -132,7 +132,7 @@ class EcommerceWS extends Vbout
                 [
                     'data' => json_encode($result),
                     'step' => 0,
-                    'comment' => 'Cart Item API Log'
+                    'comment' => 'Cart Item API Log: '.time()
                 ]
             );
         }
@@ -144,7 +144,7 @@ class EcommerceWS extends Vbout
                 [
                     'data' => json_encode($result),
                     'step' => 0,
-                    'comment' => 'Cart Item API Error Log'
+                    'comment' => 'Cart Item API Error Log: '.time()
                 ]
             );
         }
@@ -171,7 +171,7 @@ class EcommerceWS extends Vbout
                 [
                     'data' => json_encode($result),
                     'step' => 0,
-                    'comment' => 'Order API Log'
+                    'comment' => 'Order API Log: '.time()
                 ]
             );
 
@@ -182,7 +182,7 @@ class EcommerceWS extends Vbout
                 [
                     'data' => json_encode($result),
                     'step' => 0,
-                    'comment' => 'Order API Error Log'
+                    'comment' => 'Order API Error Log: '.time()
                 ]
             );
         }
@@ -206,7 +206,7 @@ class EcommerceWS extends Vbout
                 [
                     'data' => json_encode($result),
                     'step' => 0,
-                    'comment' => 'Product API Log'
+                    'comment' => 'Product API Log: '.time()
                 ]
             );
 
@@ -217,7 +217,7 @@ class EcommerceWS extends Vbout
                 [
                     'data' => json_encode($result),
                     'step' => 0,
-                    'comment' => 'Product API Error Log'
+                    'comment' => 'Product API Error Log: '.time()
                 ]
             );
         }

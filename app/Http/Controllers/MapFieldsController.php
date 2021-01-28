@@ -95,13 +95,13 @@ class MapFieldsController extends Controller{
             }
         }
 
-        DB::table('logging')->insert(
-            [
-                'data' => (serialize($PostData)),
-                'step' => 2,
-                'comment' => 'Inserting post data in Shopify Mapping fields'
-            ]
-        );
+//        DB::table('logging')->insert(
+//            [
+//                'data' => (serialize($PostData)),
+//                'step' => 2,
+//                'comment' => 'Inserting post data in Shopify Mapping fields'
+//            ]
+//        );
 
         return $PostData;
     }

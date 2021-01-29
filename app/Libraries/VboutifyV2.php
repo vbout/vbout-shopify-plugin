@@ -59,16 +59,6 @@ class VboutifyV2
             ]
         );
 
-        $ipAddress = $this->__get_ip();
-
-        DB::table('logging')->insert(
-            [
-                'data' => $ipAddress,
-                'step' => 1,
-                'comment' => 'Ip Address'
-            ]
-        );
-
         switch ($event) {
             case 'customers/create':
                 if($settings->customers == 1)
@@ -83,6 +73,8 @@ class VboutifyV2
                 break;
             case 'customers/update':
                 if($settings->customers == 1) {
+                    sleep(1);
+
                     $mappedFields = $shopifyFields->getCustomerAloneFieldMap();
                     $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
                     $action = 2;
@@ -95,6 +87,8 @@ class VboutifyV2
 
             case 'checkouts/create':
                 if($settings->abandoned_carts == 1) {
+                    sleep(1);
+
                     try {
                         $mappedFields = $shopifyFields->getCheckoutFiedlMap();
                         $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
@@ -122,6 +116,7 @@ class VboutifyV2
                         $removCartItem['domain'] = $dataFields['domain'];
                         $removCartItem['cartid'] = $dataFields['cartid'];
                         $sendData->CartItem($removCartItem, 3);
+                        sleep(1);
 
                         foreach ($line_items as $lineItemIndex => $line_item) {
                             $checkoutData = [];
@@ -166,6 +161,7 @@ class VboutifyV2
                 break;
             case 'checkouts/update':
                 if($settings->abandoned_carts == 1) {
+                    sleep(1);
 
                     $mappedFields = $shopifyFields->getCheckoutFiedlMap();
                     $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
@@ -192,6 +188,7 @@ class VboutifyV2
                     $removCartItem['domain'] = $dataFields['domain'];
                     $removCartItem['cartid'] = $dataFields['cartid'];
                     $sendData->CartItem($removCartItem, 3);
+                    sleep(1);
 
                     foreach ($line_items as $lineItemIndex => $line_item) {
                         $checkoutData = [];
@@ -224,6 +221,8 @@ class VboutifyV2
                 break;
 
             case 'orders/create':
+                sleep(1);
+
                 $mappedFields = $shopifyFields->getOrderFieldMap($shopUrl);
                 $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
                 $mappedFields = $shopifyFields->getCustomerFieldMap();
@@ -245,6 +244,8 @@ class VboutifyV2
             case 'orders/cancelled':
             case 'orders/fulfilled':
             case 'orders/paid':
+                sleep(1);
+
                 $mappedFields = $shopifyFields->getOrderFieldMap($shopUrl);
                 $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
                 $mappedFields = $shopifyFields->getCustomerFieldMap();
@@ -346,6 +347,7 @@ class VboutifyV2
                 $type = 0;
                 break;
         }
+
         return $mappedFields;
     }
 

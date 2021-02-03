@@ -91,6 +91,7 @@ class ShopfiyFields
     {
         $fieldsMap = array(
             'orderid'       => "id",
+            'ordernumber'   => "number",
             'orderdate'     => "created_at",
             'paymentmethod' => "gateway",
             'shippingmethod'=> "shipping_lines|source",
@@ -111,6 +112,7 @@ class ShopfiyFields
         $Vboutfields  = array(
             'cartid',
             'orderid',
+            'ordernumber',
             'orderdate',
             'paymentmethod',
             'shippingmethod',

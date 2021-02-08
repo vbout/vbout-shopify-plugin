@@ -18,36 +18,36 @@ class SettingsController extends Controller
 {
     public function edit(Request $request, $shopUrl)
     {
-		$settings = null;
-		$isTrial = true;
-		$isSetupComplete = false;
-		$daysLeft = 0;
-		
-		$APP_URL = env('APP_URL');
-		$upgradeUrl = $APP_URL.'/public/index.php/app?shop='.$shopUrl.'&upgradeplan=true';
-			
-		$shop = Shop::where('shop_url', $shopUrl)->first();
-		if ($shop->domain == '' )
+        $settings = null;
+        $isTrial = true;
+        $isSetupComplete = false;
+        $daysLeft = 0;
+
+        $APP_URL = env('APP_URL');
+        $upgradeUrl = $APP_URL.'/public/index.php/app?shop='.$shopUrl.'&upgradeplan=true';
+
+        $shop = Shop::where('shop_url', $shopUrl)->first();
+        if ($shop->domain == '' )
         {
             $domain = Domains::where('shop_url',$shopUrl)->orderBy('id', 'DESC')->pluck('domain');
             $shop->domain = $domain[0];
             $shop->save();
         }
 
-		if($shop){				
-			$settings = json_decode($shop->settings);
-			$isTrial = $shop->trial;
-			$isSetupComplete = $shop->setup_complete;
-			
-			$created_at = $shop->created_at;			
-			$today_date = time();
-			$created_date = strtotime($created_at);
-			$datediff = $today_date - $created_date;
-			$daysPassed = floor($datediff / (60 * 60 * 24));
-			$trialdays = config('app.shopify_app_trial_days');
-			$daysLeft =  floor($trialdays - $daysPassed);
-		}
-		
+        if($shop){
+            $settings = json_decode($shop->settings);
+            $isTrial = $shop->trial;
+            $isSetupComplete = $shop->setup_complete;
+
+            $created_at = $shop->created_at;
+            $today_date = time();
+            $created_date = strtotime($created_at);
+            $datediff = $today_date - $created_date;
+            $daysPassed = floor($datediff / (60 * 60 * 24));
+            $trialdays = config('app.shopify_app_trial_days');
+            $daysLeft =  floor($trialdays - $daysPassed);
+        }
+
         $shopifyFields = explode(',', env('SHOPIFY_APP_FIELDS'));
         $shopifyFieldsPurchase = explode(',', env('SHOPIFY_APP_FIELDS_PURCHASE'));
         $shopifyFieldsIncomplete = explode(',', env('SHOPIFY_APP_FIELDS_INCOMPLETE'));
@@ -79,27 +79,27 @@ class SettingsController extends Controller
         if ($shop->newShop == 1)
         {
 
-        $settingsConfigure = new Setting();
-        $listOfSettings = $settingsConfigure->getListActiveSettings($shop->id,'Shopify');
-        $settingsHeaders = $settingsConfigure->getListSettingsHeaders('Shopify');
+            $settingsConfigure = new Setting();
+            $listOfSettings = $settingsConfigure->getListActiveSettings($shop->id,'Shopify');
+            $settingsHeaders = $settingsConfigure->getListSettingsHeaders('Shopify');
 
-        return view('settingsV2', [
-            'listOfSettings' => $listOfSettings,
-            'settingsHeaders' => $settingsHeaders,
-            'apiKey' => $apiKey,
-            'shopifyAppApiKey' => config('app.shopify_app_api_key'),
-            'shop' => $shopUrl,
-            'settings' => $settings,
-            'shopifyFields' => $shopifyFields,
-            'shopifyFieldsPurchase' => $shopifyFieldsPurchase,
-            'shopifyFieldsIncomplete' => $shopifyFieldsIncomplete,
-            'options' => $options,
-            'isSetupComplete' => $isSetupComplete,
-            'isTrial' => $isTrial,
-            'daysLeft' => $daysLeft,
-            'upgradeUrl' => $upgradeUrl
-        ]);
-    }
+            return view('settingsV2', [
+                'listOfSettings' => $listOfSettings,
+                'settingsHeaders' => $settingsHeaders,
+                'apiKey' => $apiKey,
+                'shopifyAppApiKey' => config('app.shopify_app_api_key'),
+                'shop' => $shopUrl,
+                'settings' => $settings,
+                'shopifyFields' => $shopifyFields,
+                'shopifyFieldsPurchase' => $shopifyFieldsPurchase,
+                'shopifyFieldsIncomplete' => $shopifyFieldsIncomplete,
+                'options' => $options,
+                'isSetupComplete' => $isSetupComplete,
+                'isTrial' => $isTrial,
+                'daysLeft' => $daysLeft,
+                'upgradeUrl' => $upgradeUrl
+            ]);
+        }
 
         return view('settings', [
             'apiKey' => $apiKey,
@@ -118,7 +118,7 @@ class SettingsController extends Controller
     }
     public function configurationSettingsUpdate(Request $request, $shopUrl)
     {
-         $oldsettings = $request->input('settings');
+        $oldsettings = $request->input('settings');
 
         $shop = Shop::where('shop_url', $shopUrl)->first();
         $shopsettings = json_decode($shop->settings);
@@ -139,8 +139,8 @@ class SettingsController extends Controller
             $settingsFields = $settingsConfigure->getListSettingsHeaders('Shopify');
             foreach ($settingsFields as $settingsFieldKey => $settingsFieldValue)
             {
-                 if (isset($settingsData[$settingsFieldKey]))
-                     $data[$settingsFieldKey] = 1;
+                if (isset($settingsData[$settingsFieldKey]))
+                    $data[$settingsFieldKey] = 1;
                 else $data[$settingsFieldKey] = 0;
             }
             //Sync Current Customers
@@ -180,49 +180,49 @@ class SettingsController extends Controller
             $vboutSettingsSync = new EcommerceWS(['api_key' => $shop_apiKey]);
             $vboutSettingsSync = $vboutSettingsSync->sendAPIIntegrationCreation($shop);
 
-         }
+        }
         return redirect('settings/' . $shopUrl);
     }
     public function update(Request $request, $shopUrl)
     {
         $oldsettings = $request->input('settings');
-        
+
         $shop = Shop::where('shop_url', $shopUrl)->first();
-		$shopsettings = json_decode($shop->settings);
-		
-		if(isset($shopsettings->apiKey) && $shopsettings->apiKey == $oldsettings['apiKey']){
-			$settings = $oldsettings;
-			
-			if ($request->input('sync')) {
-				$this->syncCurrentCustomers($request);
-			}
-			
-			if (isset($settings['customersList']) && ($settings['customersList']['id'] !== '' || $settings['incompletePurchasesList']['id'] !== '' || $settings['completePurchasesList']['id'] !== '' || $settings['newsLettersList']['id'] !== '') ) {
-			   
-				if($settings['customersList']['id'] == '') 				unset($settings['customersList']);
-				if($settings['incompletePurchasesList']['id'] == '') 	unset($settings['incompletePurchasesList']);
-				if($settings['completePurchasesList']['id'] == '') 		unset($settings['completePurchasesList']);
-				if($settings['newsLettersList']['id'] == '') 			unset($settings['newsLettersList']);
-				
-				
-			    $shop->settings = json_encode($settings);
-				$shop->setup_complete = true;
-				$shop->save();
-				$message = 'Settings updated';
-			   
-				return redirect('settings/' . $shopUrl)->with('success', $message);
-			}
-		}else{
-			$settings = [];
-			$settings['apiKey'] = $oldsettings['apiKey'];
-			$settings['userName'] = $oldsettings['userName'];
-			
-			$shop->settings = json_encode($settings);
-			$shop->setup_complete = false;
-			$shop->save();
-		}
-       
-		return redirect('settings/' . $shopUrl);
+        $shopsettings = json_decode($shop->settings);
+
+        if(isset($shopsettings->apiKey) && $shopsettings->apiKey == $oldsettings['apiKey']){
+            $settings = $oldsettings;
+
+            if ($request->input('sync')) {
+                $this->syncCurrentCustomers($request);
+            }
+
+            if (isset($settings['customersList']) && ($settings['customersList']['id'] !== '' || $settings['incompletePurchasesList']['id'] !== '' || $settings['completePurchasesList']['id'] !== '' || $settings['newsLettersList']['id'] !== '') ) {
+
+                if($settings['customersList']['id'] == '') 				unset($settings['customersList']);
+                if($settings['incompletePurchasesList']['id'] == '') 	unset($settings['incompletePurchasesList']);
+                if($settings['completePurchasesList']['id'] == '') 		unset($settings['completePurchasesList']);
+                if($settings['newsLettersList']['id'] == '') 			unset($settings['newsLettersList']);
+
+
+                $shop->settings = json_encode($settings);
+                $shop->setup_complete = true;
+                $shop->save();
+                $message = 'Settings updated';
+
+                return redirect('settings/' . $shopUrl)->with('success', $message);
+            }
+        }else{
+            $settings = [];
+            $settings['apiKey'] = $oldsettings['apiKey'];
+            $settings['userName'] = $oldsettings['userName'];
+
+            $shop->settings = json_encode($settings);
+            $shop->setup_complete = false;
+            $shop->save();
+        }
+
+        return redirect('settings/' . $shopUrl);
     }
 
     public function syncCustomers(Request $request)
@@ -238,7 +238,7 @@ class SettingsController extends Controller
                         $fields = [];
                         if ($request->customersListFields) {
                             $listFields = explode(',', $request->customersListFields);
-                            
+
                             // Map the fields
                             foreach ($listFields as $field) {
                                 list($fieldKey, $fieldVal) = explode('|', $field);
@@ -298,7 +298,7 @@ class SettingsController extends Controller
     private function syncCurrentCustomersV2(Request $request)
     {
         $shop = Shop::where('shop_url',$request->all()['shop'])->first();
-         if (isset($shop->apiKey)){
+        if (isset($shop->apiKey)){
             try {
                 $customers = (new Customers($request->shop))->all();
                 $sendData = new EcommerceWS(['api_key' => $shop->apiKey]);
@@ -313,7 +313,13 @@ class SettingsController extends Controller
                     $sendData->Customer($dataCustomer,1);
                 }
             } catch (\Exception $e) {
-                echo $e->getMessage() . ' on line ' . $e->getLine();
+                DB::table('logging')->insert(
+                    [
+                        'data' => 'Sync: ' .$e->getMessage() . ' on line ' . $e->getLine(). time(),
+                        'step' => 0,
+                        'comment' => 'Customers Sync Error'
+                    ]
+                );
             }
         }
     }
@@ -341,28 +347,28 @@ class SettingsController extends Controller
 
                     $productData = $dataFields;
 
-                    $variations   = $request->all()['options'];
+                    $variations   = isset($request->all()['options']) ? $request->all()['options'] : array();
                     $variationArray = array();
 
-                    foreach ($variations as $variation)
-                    {
-                        $countVariations = 0 ;
-                        $variationString = '';
-                        foreach ($variation['values'] as $variationValues)
-                        {
-                            if($variationValues != 'Title')
+                    if(!empty($variations)){
+                        foreach ($variations as $variation) {
+                            $countVariations = 0 ;
+                            $variationString = '';
+                            foreach ($variation['values'] as $variationValues)
                             {
-                                $variationString.= $variationValues;
-                                if($countVariations < count($variation['values'])-1)
-                                    $variationString .=', ';
-                                $countVariations++;
+                                if($variationValues != 'Title')
+                                {
+                                    $variationString.= $variationValues;
+                                    if($countVariations < count($variation['values'])-1)
+                                        $variationString .=', ';
+                                    $countVariations++;
+                                }
                             }
+                            $variationArray[$variation['name']]= $variationString;
                         }
-                        $variationArray[$variation['name']]= $variationString;
                     }
 
-                    foreach ($variants as $ItemIndex => $item)
-                    {
+                    foreach ($variants as $ItemIndex => $item) {
                         $productData['sku']         = $item['sku'];
                         $productData['productid']   = $item['id'];
                         $productData['price']       = $item['price'];
@@ -391,7 +397,13 @@ class SettingsController extends Controller
                     }
                 }
             } catch (\Exception $e) {
-                echo $e->getMessage() . ' on line ' . $e->getLine();
+                DB::table('logging')->insert(
+                    [
+                        'data' => 'Sync: ' .$e->getMessage() . ' on line ' . $e->getLine(). time(),
+                        'step' => 0,
+                        'comment' => 'Products Sync Error'
+                    ]
+                );
             }
         }
     }
@@ -408,7 +420,7 @@ class SettingsController extends Controller
                         $fields = [];
                         if ($request->settings['customersList']['fields']) {
                             // $listFields = explode(',', $request->settings['customersList']['fields']);
-                            
+
                             // Map the fields
                             foreach ($request->settings['customersList']['fields'] as $field) {
                                 if ($field) {

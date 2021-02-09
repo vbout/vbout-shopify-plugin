@@ -87,7 +87,7 @@ class VboutifyV2
 
             case 'checkouts/create':
                 if($settings->abandoned_carts == 1) {
-                    sleep(1);
+                    sleep(2);
 
                     try {
                         $mappedFields = $shopifyFields->getCheckoutFiedlMap();
@@ -161,7 +161,7 @@ class VboutifyV2
                 break;
             case 'checkouts/update':
                 if($settings->abandoned_carts == 1) {
-                    sleep(1);
+                    sleep(3);
 
                     $mappedFields = $shopifyFields->getCheckoutFiedlMap();
                     $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
@@ -221,7 +221,7 @@ class VboutifyV2
                 break;
 
             case 'orders/create':
-                sleep(1);
+                sleep(2);
 
                 $mappedFields = $shopifyFields->getOrderFieldMap($shopUrl);
                 $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
@@ -244,7 +244,7 @@ class VboutifyV2
             case 'orders/cancelled':
             case 'orders/fulfilled':
             case 'orders/paid':
-                sleep(1);
+                sleep(3);
 
                 $mappedFields = $shopifyFields->getOrderFieldMap($shopUrl);
                 $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);

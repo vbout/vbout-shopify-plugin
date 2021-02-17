@@ -122,6 +122,7 @@ class EcommerceFields
         $shippingInfo = [];
         $fieldsMap = array(
             'orderid'       => "id",
+            'ordernumber'   => "number",
             'orderdate'     => "closed_at",
             'paymentmethod' => "gateway",
             'shippingmethod'=> "fulfillments|tracking_company",
@@ -144,6 +145,7 @@ class EcommerceFields
        return $fields = array(
             'cartid',
             'orderid',
+            'ordernumber',
             'orderdate',
             'paymentmethod',
             'shippingmethod',

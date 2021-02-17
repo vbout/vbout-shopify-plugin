@@ -178,10 +178,12 @@ class ShopfiyFields
     }
     public function getAddressMapFields($type)
     {
-        if ($type = 1)
+        if ($type == 1){
             $type = 'billing_address';
-        else if ($type = 2)
+        }
+        else if ($type == 2){
             $type = 'shipping_address';
+        }
 
         $fieldsMap = array(
             'firstname'     =>  $type.'|first_name',

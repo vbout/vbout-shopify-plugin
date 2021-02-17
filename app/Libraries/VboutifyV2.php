@@ -230,7 +230,7 @@ class VboutifyV2
                 $mappedFields = $shopifyFields->getAddressMapFields(1);
                 $dataFields['billinginfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
                 $mappedFields = $shopifyFields->getAddressMapFields(2);
-                $dataFields['shippingInfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
+                $dataFields['shippinginfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
                 $action = 1;
                 $dataFields['domain'] = $domain;
 //                $dataFields['ipaddress'] = $ipAddress;
@@ -253,7 +253,7 @@ class VboutifyV2
                 $mappedFields = $shopifyFields->getAddressMapFields(1);
                 $dataFields['billinginfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
                 $mappedFields = $shopifyFields->getAddressMapFields(2);
-                $dataFields['shippingInfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
+                $dataFields['shippinginfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
                 $action = 2;
                 $dataFields['domain'] = $domain;
                 $dataFields['orderdate'] = strtotime($dataFields['orderdate']);

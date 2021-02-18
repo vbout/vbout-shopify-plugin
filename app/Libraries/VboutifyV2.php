@@ -34,54 +34,73 @@ class VboutifyV2
         $this->getFieldMaps($request);
     }
 
-    /**
-     * Get Type from header
-     * @param  $evemt
-     * @returns int  $type
-     */
     private function getFieldMaps($request){
 
         $shopifyFields = new ShopfiyFields();
         $shopifyMapFields = new MapFieldsController();
+
         $event = $request->header('X-Shopify-Topic');
         $shopUrl = $request->header('X-Shopify-Shop-Domain');
+
         $shop = $this->loadShop($shopUrl);
+
         $sendData = new EcommerceWS(['api_key' => $shop->apiKey]);
         $settings = $this->loadSettings($shop->id);
+
         $domain = $shop->domain;
-        $action = 0 ; // 1 for Create  , 2 for update , 3 for deletion
+
+        // 1 for Create, 2 for update , 3 for deletion
+        $action = 0 ;
 
         DB::table('logging')->insert(
             [
                 'data' => json_encode($request->all()),
-                'step' => 1,
+                'step' => $domain,
                 'comment' => $event .' init '. time()
             ]
         );
 
         switch ($event) {
             case 'customers/create':
-                if($settings->customers == 1)
-                {
-                    $mappedFields = $shopifyFields->getCustomerAloneFieldMap();
-                    $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
-                    $action = 1;
-                    $dataFields['domain'] = $domain;
-//                    $dataFields['ipaddress'] = $ipAddress;
-                    $sendData->Customer($dataFields,$action);
+                if($settings->customers == 1) {
+                    try{
+                        $mappedFields = $shopifyFields->getCustomerAloneFieldMap();
+                        $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
+                        $action = 1;
+                        $dataFields['domain'] = $domain;
+                        $sendData->Customer($dataFields,$action);
+                    }
+                    catch (\Exception $ex) {
+                        DB::table('logging')->insert(
+                            [
+                                'data' => $ex->getMessage() . ' file: ' . $ex->getFile() . ' line: ' . $ex->getLine(),
+                                'step' => $domain,
+                                'comment' => 'customers/create error log'
+                            ]
+                        );
+                    }
                 }
                 break;
             case 'customers/update':
                 if($settings->customers == 1) {
                     sleep(1);
 
-                    $mappedFields = $shopifyFields->getCustomerAloneFieldMap();
-                    $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
-                    $action = 2;
-                    $dataFields['domain'] = $domain;
-//                    $dataFields['ipaddress'] = $ipAddress;
-
-                    $sendData->Customer($dataFields, $action);
+                    try{
+                        $mappedFields = $shopifyFields->getCustomerAloneFieldMap();
+                        $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
+                        $action = 2;
+                        $dataFields['domain'] = $domain;
+                        $sendData->Customer($dataFields, $action);
+                    }
+                    catch (\Exception $ex) {
+                        DB::table('logging')->insert(
+                            [
+                                'data' => $ex->getMessage() . ' file: ' . $ex->getFile() . ' line: ' . $ex->getLine(),
+                                'step' => $domain,
+                                'comment' => 'customers/update error log'
+                            ]
+                        );
+                    }
                 }
                 break;
 
@@ -90,7 +109,7 @@ class VboutifyV2
                     sleep(2);
 
                     try {
-                        $mappedFields = $shopifyFields->getCheckoutFiedlMap();
+                        $mappedFields = $shopifyFields->getCheckoutFieldMap();
                         $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
 
                         $mappedFields = $shopifyFields->getCustomerFieldMap();
@@ -102,8 +121,6 @@ class VboutifyV2
                         $action = 1;
 
                         $dataFields['domain'] = $domain;
-//                        $dataFields['ipaddress'] = $ipAddress;
-
                         $dataFieldsCart['customerinfo'] = $dataFields['customerinfo'];
                         $dataFieldsCart['domain'] = $dataFields['domain'];
                         $dataFieldsCart['customer'] = isset($dataFieldsCart['customerinfo']["email"]) ? $dataFieldsCart['customerinfo']["email"] : '';
@@ -113,33 +130,30 @@ class VboutifyV2
 
                         $line_items = $request->input('line_items');
 
-                        $removCartItem['domain'] = $dataFields['domain'];
-                        $removCartItem['cartid'] = $dataFields['cartid'];
-                        $sendData->CartItem($removCartItem, 3);
+                        $removeCartItem['domain'] = $dataFields['domain'];
+                        $removeCartItem['cartid'] = $dataFields['cartid'];
+                        $removeCartItem['carttoken'] = $dataFields['carttoken'];
+                        $sendData->CartItem($removeCartItem, 3);
                         sleep(1);
 
                         foreach ($line_items as $lineItemIndex => $line_item) {
-                            $checkoutData = [];
-                            $mappedFields = $shopifyFields->getProductFieldlMap();
+                            $mappedFields = $shopifyFields->getProductFieldMap();
                             $productData = $shopifyMapFields->ShopifyMapFields($line_item, $mappedFields);
+
                             $checkoutData = $productData;
                             $checkoutData['discountprice'] = '0.0';
                             $checkoutData['link'] = 'https://'.$shopUrl.'/products/'.strtolower(str_replace(" ","-",$checkoutData['name']));
 
-                            if ($line_item['variant_title'] == ''){
-                                $checkoutData['name']  = $checkoutData['name'];
-                            }
-                            else {
+                            if ($line_item['variant_title'] != ''){
                                 $checkoutData['name']  = $checkoutData['name'].' ('.$line_item['variant_title'].')';
                             }
 
                             $checkoutData['currency'] = $dataFieldsCart['cartcurrency'];
                             $checkoutData['productid'] = $line_item['variant_id'];
                             $checkoutData['customer'] = isset($dataFieldsCart['customerinfo']["email"]) ? $dataFieldsCart['customerinfo']["email"] : '';
-                            $removCartItem['productid'] = $line_item['variant_id'];
+                            $removeCartItem['productid'] = $line_item['variant_id'];
                             $checkoutData['domain'] = $dataFields['domain'];
                             $checkoutData['cartid'] = $dataFields['cartid'];
-//                            $checkoutData['ipaddress'] = $ipAddress;
 
                             $productDataFieldsExtra = $this->getProductDetails($checkoutData['productid'],$line_item['product_id'],$shopUrl);
                             $checkoutData['image'] = $productDataFieldsExtra['image'];
@@ -152,7 +166,7 @@ class VboutifyV2
                         DB::table('logging')->insert(
                             [
                                 'data' => $ex->getMessage() . ' file: ' . $ex->getFile() . ' line: ' . $ex->getLine(),
-                                'step' => 0,
+                                'step' => $domain,
                                 'comment' => 'checkouts/create error log'
                             ]
                         );
@@ -163,81 +177,103 @@ class VboutifyV2
                 if($settings->abandoned_carts == 1) {
                     sleep(3);
 
-                    $mappedFields = $shopifyFields->getCheckoutFiedlMap();
-                    $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
+                    try{
+                        $mappedFields = $shopifyFields->getCheckoutFieldMap();
+                        $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
 
-                    $mappedFields = $shopifyFields->getCustomerFieldMap();
-                    $dataFields ['customerinfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
+                        $mappedFields = $shopifyFields->getCustomerFieldMap();
+                        $dataFields ['customerinfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
 
-                    $action = 2;
-                    $dataFields['domain'] = $domain;
+                        $action = 2;
+                        $dataFields['domain'] = $domain;
 
-                    $mappedFieldsCreateCart = $shopifyFields->getCartBasicFieldMap();
-                    $dataFieldsCart = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFieldsCreateCart);
+                        $mappedFieldsCreateCart = $shopifyFields->getCartBasicFieldMap();
+                        $dataFieldsCart = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFieldsCreateCart);
 
-                    $dataFieldsCart['customerinfo'] = $dataFields['customerinfo'];
-                    $dataFieldsCart['domain'] = $dataFields['domain'];
-                    $dataFieldsCart['customer'] = $dataFieldsCart['customerinfo']["email"];
-                    $dataFieldsCart['storename'] = $request->input('line_items')[0]['vendor'];
-//                    $dataFieldsCart['ipaddress'] = $ipAddress;
+                        $dataFieldsCart['customerinfo'] = $dataFields['customerinfo'];
+                        $dataFieldsCart['domain'] = $dataFields['domain'];
+                        $dataFieldsCart['customer'] = $dataFieldsCart['customerinfo']["email"];
+                        $dataFieldsCart['storename'] = $request->input('line_items')[0]['vendor'];
 
-                    $sendData->Cart($dataFieldsCart, $action);
+                        $sendData->Cart($dataFieldsCart, $action);
 
-                    $line_items = $request->input('line_items');
+                        $line_items = $request->input('line_items');
 
-                    $removCartItem['domain'] = $dataFields['domain'];
-                    $removCartItem['cartid'] = $dataFields['cartid'];
-                    $sendData->CartItem($removCartItem, 3);
-                    sleep(1);
+                        $removeCartItem['domain'] = $dataFields['domain'];
+                        $removeCartItem['cartid'] = $dataFields['cartid'];
+                        $removeCartItem['carttoken'] = $dataFields['carttoken'];
+                        $sendData->CartItem($removeCartItem, 3);
+                        sleep(1);
 
-                    foreach ($line_items as $lineItemIndex => $line_item) {
-                        $checkoutData = [];
-                        $mappedFields = $shopifyFields->getProductFieldlMap();
-                        $productData = $shopifyMapFields->ShopifyMapFields($line_item, $mappedFields);
-                        $checkoutData = $productData;
-                        $checkoutData['discountprice'] = '0.0';
-                        $checkoutData['link'] = 'https://'.$shopUrl.'/products/'.strtolower(str_replace(" ","-",$checkoutData['name']));
-                        if ( $line_item['variant_title'] == ''){
-                            $checkoutData['name']  = $checkoutData['name'];
+                        foreach ($line_items as $lineItemIndex => $line_item) {
+                            $mappedFields = $shopifyFields->getProductFieldMap();
+                            $productData = $shopifyMapFields->ShopifyMapFields($line_item, $mappedFields);
+
+                            $checkoutData = $productData;
+                            $checkoutData['discountprice'] = '0.0';
+                            $checkoutData['link'] = 'https://'.$shopUrl.'/products/'.strtolower(str_replace(" ","-",$checkoutData['name']));
+
+                            if ($line_item['variant_title'] != ''){
+                                $checkoutData['name']  = $checkoutData['name'].' ('.$line_item['variant_title'].')';
+                            }
+
+                            $checkoutData['currency'] = $dataFieldsCart['cartcurrency'];
+                            $checkoutData['productid'] = $line_item['variant_id'];
+                            $removeCartItem['productid'] = $line_item['variant_id'];
+                            $checkoutData['customer'] = $dataFieldsCart['customerinfo']["email"];
+                            $checkoutData['domain'] = $dataFields['domain'];
+                            $checkoutData['cartid'] = $dataFields['cartid'];
+
+                            $productDataFieldsExtra = $this->getProductDetails($checkoutData['productid'],$line_item['product_id'],$shopUrl);
+                            $checkoutData['image'] = $productDataFieldsExtra['image'];
+                            $checkoutData['categoryid'] = $productDataFieldsExtra['category'];
+
+                            $checkoutData['category'] = $productDataFieldsExtra['category'];
+
+                            $sendData->CartItem($checkoutData, 1);
                         }
-                        else $checkoutData['name']  = $checkoutData['name'].' ('.$line_item['variant_title'].')';
-
-                        $checkoutData['currency'] = $dataFieldsCart['cartcurrency'];
-                        $checkoutData['productid'] = $line_item['variant_id'];
-                        $checkoutData['customer'] = $dataFieldsCart['customerinfo']["email"];
-                        $checkoutData['domain'] = $dataFields['domain'];
-                        $checkoutData['cartid'] = $dataFields['cartid'];
-//                        $checkoutData['ipaddress'] = $ipAddress;
-
-                        $productDataFieldsExtra = $this->getProductDetails($checkoutData['productid'],$line_item['product_id'],$shopUrl);
-                        $checkoutData['image'] = $productDataFieldsExtra['image'];
-                        $checkoutData['categoryid'] = $productDataFieldsExtra['category'];
-
-                        $checkoutData['category'] = $productDataFieldsExtra['category'];
-
-                        $sendData->CartItem($checkoutData, 1);
+                    }
+                    catch (\Exception $ex) {
+                        DB::table('logging')->insert([
+                            'data' => $ex->getMessage() . ' file: ' . $ex->getFile() . ' line: ' . $ex->getLine(),
+                            'step' => $domain,
+                            'comment' => 'checkouts/update error log'
+                            ]
+                        );
                     }
                 }
                 break;
 
             case 'orders/create':
                 sleep(2);
+                try{
+                    $mappedFields = $shopifyFields->getOrderFieldMap();
+                    $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
 
-                $mappedFields = $shopifyFields->getOrderFieldMap($shopUrl);
-                $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
-                $mappedFields = $shopifyFields->getCustomerFieldMap();
-                $dataFields['customerinfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
-                $mappedFields = $shopifyFields->getAddressMapFields(1);
-                $dataFields['billinginfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
-                $mappedFields = $shopifyFields->getAddressMapFields(2);
-                $dataFields['shippinginfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
-                $action = 1;
-                $dataFields['domain'] = $domain;
-//                $dataFields['ipaddress'] = $ipAddress;
+                    $mappedFields = $shopifyFields->getCustomerFieldMap();
+                    $dataFields['customerinfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
 
-                $dataFields['orderdate'] = strtotime($dataFields['orderdate']);
-                $dataFields['storename'] = $request->all()['line_items'][0]['vendor'];
-                $sendData->Order($dataFields,$action);
+                    $mappedFields = $shopifyFields->getAddressMapFields(1);
+                    $dataFields['billinginfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
+
+                    $mappedFields = $shopifyFields->getAddressMapFields(2);
+                    $dataFields['shippinginfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
+
+                    $action = 1;
+
+                    $dataFields['domain'] = $domain;
+                    $dataFields['orderdate'] = strtotime($dataFields['orderdate']);
+                    $dataFields['storename'] = $request->all()['line_items'][0]['vendor'];
+                    $sendData->Order($dataFields,$action);
+                }
+                catch (\Exception $ex) {
+                    DB::table('logging')->insert([
+                            'data' => $ex->getMessage() . ' file: ' . $ex->getFile() . ' line: ' . $ex->getLine(),
+                            'step' => $domain,
+                            'comment' => 'orders/create error log'
+                        ]
+                    );
+                }
                 break;
 
             case 'orders/updated':
@@ -246,155 +282,157 @@ class VboutifyV2
             case 'orders/paid':
                 sleep(3);
 
-                $mappedFields = $shopifyFields->getOrderFieldMap($shopUrl);
-                $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
-                $mappedFields = $shopifyFields->getCustomerFieldMap();
-                $dataFields['customerinfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
-                $mappedFields = $shopifyFields->getAddressMapFields(1);
-                $dataFields['billinginfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
-                $mappedFields = $shopifyFields->getAddressMapFields(2);
-                $dataFields['shippinginfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
-                $action = 2;
-                $dataFields['domain'] = $domain;
-                $dataFields['orderdate'] = strtotime($dataFields['orderdate']);
-                $dataFields['storename'] = $request->all()['line_items'][0]['vendor'];
-                $sendData->Order($dataFields,$action);
+                try{
+                    $mappedFields = $shopifyFields->getOrderFieldMap();
+                    $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
+
+                    $mappedFields = $shopifyFields->getCustomerFieldMap();
+                    $dataFields['customerinfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
+
+                    $mappedFields = $shopifyFields->getAddressMapFields(1);
+                    $dataFields['billinginfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
+
+                    $mappedFields = $shopifyFields->getAddressMapFields(2);
+                    $dataFields['shippinginfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
+
+                    $action = 2;
+
+                    $dataFields['domain'] = $domain;
+                    $dataFields['orderdate'] = strtotime($dataFields['orderdate']);
+                    $dataFields['storename'] = $request->all()['line_items'][0]['vendor'];
+                    $sendData->Order($dataFields,$action);
+                }
+                catch (\Exception $ex) {
+                    DB::table('logging')->insert([
+                            'data' => $ex->getMessage() . ' file: ' . $ex->getFile() . ' line: ' . $ex->getLine(),
+                            'step' => $domain,
+                            'comment' => 'orders/updated error log'
+                        ]
+                    );
+                }
+
                 break;
 
             case 'products/create':
-                if($settings->product_feed == 1 )
-                {
-                    $mappedFields = $shopifyFields->getProductMapField();
-                    $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
-                    $action = 1;
-                    $dataFields['domain'] = $domain;
-                    $variants = $request->all()['variants'];
-                    $images   = $request->all()['images'];
-//                    $dataFields['ipaddress'] = $ipAddress;
-                    $dataFields['discountprice'] = '0.0';
-                    $productData = $dataFields;
-                    foreach ($variants as $ItemIndex => $item)
-                    {
-                        $productData['sku']         = $item['sku'];
-                        $productData['productid']   = $item['id'];
-                        $productData['price']       = $item['price'];
-                        $productData['link'] = 'https://'.$shopUrl.'/products/'.strtolower(str_replace(" ","-",$dataFields['name']));
-                        if ( $item['title'] == 'Default Title')
-                            $productData['name']  = $dataFields['name'];
-                        else $productData['name']  = $dataFields['name'].' ('.$item['title'].')';
-                        if (isset($item['image_id']) || ($item['image_id'] != null))
-                        {
-                            foreach ($images as $imageIndex => $imageValue)
-                            {
-                                if( $item['image_id'] == $imageValue['id'])
+                if($settings->product_feed == 1 ) {
+                    try{
+                        $mappedFields = $shopifyFields->getProductMapField();
+                        $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
+
+                        $action = 1;
+
+                        $dataFields['domain'] = $domain;
+
+                        $variants = $request->all()['variants'];
+                        $images   = $request->all()['images'];
+
+                        $dataFields['discountprice'] = '0.0';
+
+                        $productData = $dataFields;
+
+                        foreach ($variants as $ItemIndex => $item) {
+                            $productData['sku']         = $item['sku'];
+                            $productData['productid']   = $item['id'];
+                            $productData['price']       = $item['price'];
+                            $productData['link'] = 'https://'.$shopUrl.'/products/'.strtolower(str_replace(" ","-",$dataFields['name']));
+
+                            if ($item['title'] == 'Default Title'){
+                                $productData['name']  = $dataFields['name'];
+                            }
+                            else{
+                                $productData['name']  = $dataFields['name'].' ('.$item['title'].')';
+                            }
+
+                            if (isset($item['image_id']) || ($item['image_id'] != null)) {
+                                foreach ($images as $imageIndex => $imageValue)
                                 {
-                                    $productData['image'] = $imageValue['src'];
-                                    break;
+                                    if( $item['image_id'] == $imageValue['id'])
+                                    {
+                                        $productData['image'] = $imageValue['src'];
+                                        break;
+                                    }
                                 }
                             }
+                            else {
+                                if ((isset($request->all()['image']['src']) || ($request->all()['image']['src'] != null)))
+                                    $productData['image'] = $request->all()['image']['src'];
+                            }
+
+                            $sendData->Product($productData,$action);
                         }
-                        else
-                        {
-                            if ((isset($request->all()['image']['src']) || ($request->all()['image']['src'] != null)))
-                                $productData['image'] = $request->all()['image']['src'];
-                        }
-                        $sendData->Product($productData,$action);
+                    }
+                    catch (\Exception $ex) {
+                        DB::table('logging')->insert([
+                                'data' => $ex->getMessage() . ' file: ' . $ex->getFile() . ' line: ' . $ex->getLine(),
+                                'step' => $domain,
+                                'comment' => 'products/create error log'
+                            ]
+                        );
                     }
                 }
                 break;
             case 'products/update':
                 if($settings->product_feed == 1 ) {
-                    $mappedFields = $shopifyFields->getProductMapField();
-                    $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
-                    $action = 1;
-                    $dataFields['domain'] = $domain;
-                    $variants = $request->all()['variants'];
-                    $images   = $request->all()['images'];
-//                    $dataFields['ipaddress'] = $ipAddress;
-                    $dataFields['discountprice'] = '0.0';
-                    $productData = $dataFields;
-                    foreach ($variants as $ItemIndex => $item)
-                    {
-                        $productData['sku']         = $item['sku'];
-                        $productData['productid']   = $item['id'];
-                        $productData['price']       = $item['price'];
-                        $productData['link'] = 'https://'.$shopUrl.'/products/'.strtolower(str_replace(" ","-",$dataFields['name']));
-                        if ( $item['title'] == 'Default Title')
-                            $productData['name']  = $dataFields['name'];
-                        else $productData['name']  = $dataFields['name'].' ('.$item['title'].')';
-                        if (isset($item['image_id']) || ($item['image_id'] != null))
-                        {
-                            foreach ($images as $imageIndex => $imageValue)
-                            {
-                                if( $item['image_id'] == $imageValue['id'])
-                                {
-                                    $productData['image'] = $imageValue['src'];
-                                    break;
+                    try{
+                        $mappedFields = $shopifyFields->getProductMapField();
+                        $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
+
+                        $action = 1;
+
+                        $dataFields['domain'] = $domain;
+
+                        $variants = $request->all()['variants'];
+                        $images   = $request->all()['images'];
+
+                        $dataFields['discountprice'] = '0.0';
+
+                        $productData = $dataFields;
+
+                        foreach ($variants as $ItemIndex => $item) {
+                            $productData['sku']         = $item['sku'];
+                            $productData['productid']   = $item['id'];
+                            $productData['price']       = $item['price'];
+                            $productData['link'] = 'https://'.$shopUrl.'/products/'.strtolower(str_replace(" ","-",$dataFields['name']));
+
+                            if ($item['title'] == 'Default Title'){
+                                $productData['name']  = $dataFields['name'];
+                            }
+                            else{
+                                $productData['name']  = $dataFields['name'].' ('.$item['title'].')';
+                            }
+
+                            if (isset($item['image_id']) || ($item['image_id'] != null)) {
+                                foreach ($images as $imageIndex => $imageValue) {
+                                    if( $item['image_id'] == $imageValue['id']) {
+                                        $productData['image'] = $imageValue['src'];
+                                        break;
+                                    }
                                 }
                             }
+                            else {
+                                if ((isset($request->all()['image']['src']) || ($request->all()['image']['src'] != null)))
+                                    $productData['image'] = $request->all()['image']['src'];
+                            }
+
+                            $sendData->Product($productData,$action);
                         }
-                        else
-                        {
-                            if ((isset($request->all()['image']['src']) || ($request->all()['image']['src'] != null)))
-                                $productData['image'] = $request->all()['image']['src'];
-                        }
-                        $sendData->Product($productData,$action);
+                    }
+                    catch (\Exception $ex) {
+                        DB::table('logging')->insert([
+                                'data' => $ex->getMessage() . ' file: ' . $ex->getFile() . ' line: ' . $ex->getLine(),
+                                'step' => $domain,
+                                'comment' => 'products/update error log'
+                            ]
+                        );
                     }
                 }
                 break;
 
             default:
-                $type = 0;
                 break;
         }
 
-        return $mappedFields;
-    }
-
-    /**
-     * Maps the parameter and sends them to a global function
-     * @int  $type
-     * @param  $data
-     * @string  $shop_url
-     * @int  $listId
-     * @returns string  $result
-     */
-    private function mappingAPI($type, $data, $shop_id, $listId, $spiKey)
-    {
-        $activeSettings = new Setting();
-        $activeSettings = $activeSettings->getListActiveSettings($shop_id,'Shopify');
-
-        //To send to the global function
-        $address = $this->getaddressData($data);
-        $products = $this->getCustomerData($data);
-        $customer = $this->getProductData($data);
-
-        $customerEmail = '';
-        if (isset($data['email'])) {
-            $customerEmail = $data['email'];
-        }else if (isset($data['customer']['email'])) {
-            $customerEmail = $data['customer']['email'];
-        }
-
-        if(isset($address))
-            $data['address'] = $address;
-        if(isset($customer))
-            $data['customer'] = $customer;
-        if(isset($products))
-            $data['$products'] = $products;
-        if(isset($data))
-        {
-            $payload = [
-                'email' => $customerEmail,
-                'listId' => $listId,
-                'status' => 'active',
-                'data'   => $data
-            ];
-
-            $vboutApp = new EcommerceWS(['api_key' => $spiKey]);
-            $result = $vboutApp->sendEcommerce($type, $payload);
-        }
-
+        return true;
     }
 
     private function loadShop($shopUrl){
@@ -441,30 +479,4 @@ class VboutifyV2
         return $productData;
     }
 
-    private function __get_ip() {
-
-        //Just get the headers if we can or else use the SERVER global
-        if ( function_exists( 'apache_request_headers' ) ) {
-            $headers = apache_request_headers();
-        } else {
-            $headers = $_SERVER;
-        }
-
-        //Get the forwarded IP if it exists
-        if ( array_key_exists( 'CF-Connecting-IP', $headers ) && filter_var( $headers['CF-Connecting-IP'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
-            $the_ip = $headers['CF-Connecting-IP'];
-        }
-        else if ( array_key_exists( 'X-Forwarded-For', $headers ) && filter_var( $headers['X-Forwarded-For'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
-            $the_ip = $headers['X-Forwarded-For'];
-        }
-        elseif ( array_key_exists( 'HTTP_X_FORWARDED_FOR', $headers ) && filter_var( $headers['HTTP_X_FORWARDED_FOR'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 )) {
-            $the_ip = $headers['HTTP_X_FORWARDED_FOR'];
-        }
-        else {
-
-            $the_ip = filter_var( $_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 );
-        }
-
-        return $the_ip;
-    }
 }

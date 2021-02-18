@@ -17,20 +17,11 @@ class ShopfiyFields
             'phone'         => "customer|phone",
             'country'       => "customer|default_address|country",
         );
-        $Vboutfields = array (
-            'firstname',
-            'lastname',
-            'email',
-            'phone',
-            'company',
-            'country'
-        );
         return $fieldsMap;
     }
+
     public function getCustomerAloneFieldMap()
     {
-
-
         $fieldsMap = array(
             'email'         => "email",
             'firstname'     => "first_name",
@@ -38,18 +29,8 @@ class ShopfiyFields
             'phone'         => "phone",
             'country'       => "default_address|country",
         );
-
-        $Vboutfields = array (
-            'firstname',
-            'lastname',
-            'email',
-            'phone',
-            'company',
-            'country'
-        );
         return $fieldsMap;
     }
-
 
     public function getCartFieldMap()
     {
@@ -57,37 +38,24 @@ class ShopfiyFields
             'cartid'        => "id",
             'uniqueid'      => "token",
            );
-        $Vboutfields = array (
-            'cartid',
-            'productid',
-            'name',
-            'description',
-            'variation',
-            'price',
-            'discountprice',
-            'currency',
-            'quantity',
-            'sku',
-            'categoryid',
-            'category',
-            'link',
-            'image',
-        );
+
         return $fieldMap;
     }
+
     public function getCartBasicFieldMap()
     {
         $fieldMap = array(
             'cartid'        => "cart_token",
+            'carttoken'     => "token",
             'uniqueid'      => "id",
             'customer'      => "email",
             'cartcurrency'  => "presentment_currency",
             'abandonurl'    => "abandoned_checkout_url"
         );
-
         return $fieldMap;
     }
-    public function getOrderFieldMap($storename)
+
+    public function getOrderFieldMap()
     {
         $fieldsMap = array(
             'orderid'       => "id",
@@ -100,55 +68,30 @@ class ShopfiyFields
             'subtotal'      => "subtotal_price",
             'discountcode'  => "discount_codes|code",
             'discountvalue' => "total_discounts",
-//            'taxname'       => 'tax_lines|title',
             'taxcost'       => "total_tax",
-//            'storename'      => $storename,
             'currency'      => "currency",
             'status'        => "financial_status",
             'notes'         => "note",
             'cartid'        => "cart_token",
+            'carttoken'     => "token",
             'ipaddress'     => 'browser_ip'
-        );
-        $Vboutfields  = array(
-            'cartid',
-            'orderid',
-            'ordernumber',
-            'orderdate',
-            'paymentmethod',
-            'shippingmethod',
-            'shippingcost',
-            'storename',
-            'grandtotal',
-            'subtotal',
-            'promocode',
-            'promovalue',
-            'discountcode',
-            'discountvalue',
-            'taxname',
-            'taxcost',
-            'otherfeename',
-            'otherfeecost',
-            'currency',
-            'status',
-            'notes',
-            'customerinfo',
-            'billinginfo',
-            'shippinginfo',
-
         );
         return $fieldsMap;
     }
-    public function getCheckoutFiedlMap()
+
+    public function getCheckoutFieldMap()
     {
         $fieldMap = array(
             'cartid'        => "cart_token",
+            'carttoken'     => "token",
             'uniqueid'      => "id",
             'cartcurrency'  => "presentment_currency",
             'abandonurl'    => "abandoned_checkout_url",
         );
         return $fieldMap;
     }
-    public function getProductFieldlMap()
+
+    public function getProductFieldMap()
     {
         $fieldMap = array(
             'quantity'      => "quantity",
@@ -161,7 +104,8 @@ class ShopfiyFields
         );
         return $fieldMap;
     }
-    public function getCartitemFieldlMap()
+
+    public function getCartItemFieldMap()
     {
         $fieldMap = array(
             'quantity'      => "quantity",
@@ -176,6 +120,7 @@ class ShopfiyFields
         );
         return $fieldMap;
     }
+
     public function getAddressMapFields($type)
     {
         if ($type == 1){
@@ -199,25 +144,10 @@ class ShopfiyFields
             'countrycode'   =>  $type.'|country_code',
             'zipcode'       =>  $type.'|zip'
         );
-        $Vboutfields  = array(
-            'firstname',
-            'lastname',
-            'email',
-            'phone',
-            'company',
-            'address',
-            'address2',
-            'city',
-            'statename',
-            'statecode',
-            'countryname',
-            'countrycode',
-            'zipcode',
-
-        );
         return $fieldsMap;
     }
-    public function getProductFeedFieldlMap()
+
+    public function getProductFeedFieldMap()
     {
 
         $fieldMap = array(
@@ -230,7 +160,7 @@ class ShopfiyFields
         return $fieldMap;
     }
 
-    public function getProductFeedVariantFieldlMap()
+    public function getProductFeedVariantFieldMap()
     {
 
         $fieldMap = array(
@@ -242,9 +172,9 @@ class ShopfiyFields
          );
         return $fieldMap;
     }
+
     public function getProductMapField()
     {
-        //There's no way to determine what a visitor or customer is looking at with the Shopify API.
         $fieldsMap = array(
             'productid'     => 'id',
             'name'          => 'title',
@@ -253,25 +183,7 @@ class ShopfiyFields
             'description'   => 'body_html',
 //            'image'         => 'image|src'
         );
-
-        $Vboutfields  = array(
-            'customer',
-            'uniqueid',
-            'productid',
-            'name',
-            'price',
-            'discountprice',
-            'currency',
-            'sku',
-            'categoryid',
-            'category',
-            'link',
-            'image',
-            'description',
-
-        );
         return $fieldsMap;
-
     }
 
     private function getCategoryMapField($data)
@@ -289,9 +201,9 @@ class ShopfiyFields
         return $Vboutfields;
 
     }
+
     public function getSettingsMapField()
     {
-        //Also Not provided or available by Shopify
         $Vboutfields  = array(
             'abandoned_carts'       =>  'Abandoned carts (When a checkout/order is created or updated on Shopify.) ',
             'product_visits'        =>  'Product Visits ( This feature is not available )',
@@ -304,7 +216,6 @@ class ShopfiyFields
             'search'                =>  'Search (Customer Search) ',
         );
         return $Vboutfields;
-
     }
 
 }

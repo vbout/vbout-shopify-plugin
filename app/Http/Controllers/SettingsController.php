@@ -309,7 +309,7 @@ class SettingsController extends Controller
                     $dataCustomer['lastname']           = $customer->last_name;
                     $dataCustomer['acceptsmarketing']   = $customer->accepts_marketing;
                     $dataCustomer['phone']              = $customer->phone;
-                    $dataCustomer['domain'] = $shop->domain;
+                    $dataCustomer['domain']             = $shop->domain;
                     $sendData->Customer($dataCustomer,1);
                 }
             } catch (\Exception $e) {
@@ -369,6 +369,7 @@ class SettingsController extends Controller
                     }
 
                     foreach ($variants as $ItemIndex => $item) {
+                        $productData['sync']        = true;
                         $productData['sku']         = $item['sku'];
                         $productData['productid']   = $item['id'];
                         $productData['price']       = $item['price'];

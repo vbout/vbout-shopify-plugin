@@ -246,9 +246,61 @@ class VboutifyV2
 
             case 'orders/create':
                 sleep(2);
+
                 try{
                     $mappedFields = $shopifyFields->getOrderFieldMap();
                     $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
+
+                    if(empty($dataFields['cartid'])) {
+                        $dataFields['cartid'] = $dataFields['carttoken'];
+
+                        try {
+                            $cartDataFields = array();
+
+                            $cartDataFields['domain'] = $domain;
+                            $cartDataFields['uniqueid'] = $dataFields['orderid'];
+                            $cartDataFields['cartid'] = $dataFields['cartid'];
+                            $cartDataFields['cartcurrency'] = $request->input('currency');
+
+                            $sendData->Cart($cartDataFields, 1);
+
+                            $line_items = $request->input('line_items');
+
+                            foreach ($line_items as $lineItemIndex => $line_item) {
+                                $mappedFields = $shopifyFields->getProductFieldMap();
+                                $productData = $shopifyMapFields->ShopifyMapFields($line_item, $mappedFields);
+
+                                $lineItemData = array();
+                                $lineItemData['domain'] = $domain;
+                                $lineItemData['cartid'] = $cartDataFields['cartid'];
+                                $lineItemData['productid'] = $productData['productid'];
+                                $lineItemData['name'] = $productData['price'];
+                                $lineItemData['price'] = $productData['price'];
+                                $lineItemData['quantity'] = $productData['quantity'];
+                                $lineItemData['discountprice'] = '0.0';
+                                $lineItemData['link'] = 'https://' . $shopUrl . '/products/' . strtolower(str_replace(" ", "-", $productData['name']));
+
+                                $productDataFieldsExtra = $this->getProductDetails($productData['productid'], $line_item['product_id'], $shopUrl);
+                                $lineItemData['image'] = $productDataFieldsExtra['image'];
+                                $lineItemData['categoryid'] = $productDataFieldsExtra['category'];
+                                $lineItemData['category'] = $productDataFieldsExtra['category'];
+
+                                if ($line_item['variant_title'] != '') {
+                                    $lineItemData['name'] = $productData['name'] . ' (' . $line_item['variant_title'] . ')';
+                                }
+
+                                $sendData->CartItem($lineItemData, 1);
+                            }
+                        }
+                        catch (\Exception $ex) {
+                            DB::table('logging')->insert([
+                                    'data' => $ex->getMessage() . ' file: ' . $ex->getFile() . ' line: ' . $ex->getLine(),
+                                    'step' => $domain,
+                                    'comment' => 'Force Cart Creation error log'
+                                ]
+                            );
+                        }
+                    }
 
                     $mappedFields = $shopifyFields->getCustomerFieldMap();
                     $dataFields['customerinfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
@@ -264,6 +316,7 @@ class VboutifyV2
                     $dataFields['domain'] = $domain;
                     $dataFields['orderdate'] = strtotime($dataFields['orderdate']);
                     $dataFields['storename'] = $request->all()['line_items'][0]['vendor'];
+
                     $sendData->Order($dataFields,$action);
                 }
                 catch (\Exception $ex) {
@@ -285,6 +338,56 @@ class VboutifyV2
                 try{
                     $mappedFields = $shopifyFields->getOrderFieldMap();
                     $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
+
+                    if(empty($dataFields['cartid'])) {
+                        $dataFields['cartid'] = $dataFields['carttoken'];
+
+                        try {
+                            $cartDataFields = array();
+
+                            $cartDataFields['domain'] = $domain;
+                            $cartDataFields['uniqueid'] = $dataFields['orderid'];
+                            $cartDataFields['cartid'] = $dataFields['cartid'];
+                            $cartDataFields['cartcurrency'] = $request->input('currency');
+
+                            $sendData->Cart($cartDataFields, 1);
+
+                            $line_items = $request->input('line_items');
+
+                            foreach ($line_items as $lineItemIndex => $line_item) {
+                                $mappedFields = $shopifyFields->getProductFieldMap();
+                                $productData = $shopifyMapFields->ShopifyMapFields($line_item, $mappedFields);
+
+                                $lineItemData = array();
+                                $lineItemData['domain'] = $domain;
+                                $lineItemData['cartid'] = $cartDataFields['cartid'];
+                                $lineItemData['productid'] = $productData['productid'];
+                                $lineItemData['name'] = $productData['price'];
+                                $lineItemData['price'] = $productData['price'];
+                                $lineItemData['quantity'] = $productData['quantity'];
+                                $lineItemData['discountprice'] = '0.0';
+                                $lineItemData['link'] = 'https://' . $shopUrl . '/products/' . strtolower(str_replace(" ", "-", $productData['name']));
+
+                                $productDataFieldsExtra = $this->getProductDetails($productData['productid'], $line_item['product_id'], $shopUrl);
+                                $lineItemData['image'] = $productDataFieldsExtra['image'];
+                                $lineItemData['categoryid'] = $productDataFieldsExtra['category'];
+                                $lineItemData['category'] = $productDataFieldsExtra['category'];
+
+                                if ($line_item['variant_title'] != '') {
+                                    $lineItemData['name'] = $productData['name'] . ' (' . $line_item['variant_title'] . ')';
+                                }
+
+                                $sendData->CartItem($lineItemData, 1);
+                            }
+                        } catch (\Exception $ex) {
+                            DB::table('logging')->insert([
+                                    'data' => $ex->getMessage() . ' file: ' . $ex->getFile() . ' line: ' . $ex->getLine(),
+                                    'step' => $domain,
+                                    'comment' => 'Force Cart Creation error log'
+                                ]
+                            );
+                        }
+                    }
 
                     $mappedFields = $shopifyFields->getCustomerFieldMap();
                     $dataFields['customerinfo'] = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);

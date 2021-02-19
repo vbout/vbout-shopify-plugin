@@ -123,7 +123,7 @@ class VboutifyV2
                         $dataFields['domain'] = $domain;
                         $dataFieldsCart['customerinfo'] = $dataFields['customerinfo'];
                         $dataFieldsCart['domain'] = $dataFields['domain'];
-                        $dataFieldsCart['customer'] = isset($dataFieldsCart['customerinfo']["email"]) ? $dataFieldsCart['customerinfo']["email"] : '';
+                        $dataFieldsCart['customer'] = isset($dataFieldsCart['customerinfo']['email']) ? $dataFieldsCart['customerinfo']['email'] : '';
                         $dataFieldsCart['storename'] = $request->input('line_items')[0]['vendor'];
 
                         $sendData->Cart($dataFieldsCart, $action);
@@ -150,7 +150,7 @@ class VboutifyV2
 
                             $checkoutData['currency'] = $dataFieldsCart['cartcurrency'];
                             $checkoutData['productid'] = $line_item['variant_id'];
-                            $checkoutData['customer'] = isset($dataFieldsCart['customerinfo']["email"]) ? $dataFieldsCart['customerinfo']["email"] : '';
+                            $checkoutData['customer'] = isset($dataFieldsCart['customerinfo']['email']) ? $dataFieldsCart['customerinfo']['email'] : '';
                             $removeCartItem['productid'] = $line_item['variant_id'];
                             $checkoutData['domain'] = $dataFields['domain'];
                             $checkoutData['cartid'] = $dataFields['cartid'];
@@ -192,7 +192,7 @@ class VboutifyV2
 
                         $dataFieldsCart['customerinfo'] = $dataFields['customerinfo'];
                         $dataFieldsCart['domain'] = $dataFields['domain'];
-                        $dataFieldsCart['customer'] = $dataFieldsCart['customerinfo']["email"];
+                        $dataFieldsCart['customer'] = isset($dataFieldsCart['customerinfo']['email']) ? $dataFieldsCart['customerinfo']['email'] : '';
                         $dataFieldsCart['storename'] = $request->input('line_items')[0]['vendor'];
 
                         $sendData->Cart($dataFieldsCart, $action);

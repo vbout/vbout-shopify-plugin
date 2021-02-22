@@ -83,6 +83,8 @@ class VboutifyV2
                 break;
             case 'customers/update':
                 if($settings->customers == 1) {
+                    sleep(1);
+
                     try{
                         $mappedFields = $shopifyFields->getCustomerAloneFieldMap();
                         $dataFields = $shopifyMapFields->ShopifyMapFields($request->all(), $mappedFields);
